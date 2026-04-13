@@ -31,7 +31,7 @@ function VerifyEmailForm() {
     startTransition(async () => {
       const res = await verifyEmailAction(data)
       if (res.success) {
-        router.push('/')
+        router.push('/dashboard')
       }
       else {
         setServerError(res.error || 'Failed to verify email. Please check your code.')

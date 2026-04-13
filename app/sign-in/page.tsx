@@ -29,7 +29,7 @@ export default function SignInPage() {
     startTransition(async () => {
       const res = await signInAction(data)
       if (res.success) {
-        router.push('/')
+        router.push('/dashboard')
       }
       else {
         if (res.requireVerification) {

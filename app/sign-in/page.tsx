@@ -3,7 +3,11 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Field } from '@base-ui/react/field'
 import { signInAction } from '../auth/actions'
+import { signInSchema, type SignInValues } from '@/lib/schemas/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,25 +17,26 @@ import { Label } from '@/components/ui/label'
 export default function SignInPage() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError(null)
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+  const form = useForm<SignInValues>({
+    defaultValues: { email: '', password: '' },
+    resolver: zodResolver(signInSchema)
+  })
 
+  const onSubmit = (data: SignInValues) => {
+    setServerError(null)
     startTransition(async () => {
-      const res = await signInAction(formData)
+      const res = await signInAction(data)
       if (res.success) {
         router.push('/')
       }
       else {
         if (res.requireVerification) {
-          router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+          router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
         }
         else {
-          setError(res.error || 'Failed to sign in')
+          setServerError(res.error || 'Failed to sign in')
         }
       }
     })
@@ -45,36 +50,58 @@ export default function SignInPage() {
           <CardDescription className="text-muted-foreground">Sign in to SaitoLab Money</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            {serverError && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{serverError}</AlertDescription>
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@example.com"
-              />
-            </div>
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field.Root invalid={fieldState.invalid} className="space-y-2">
+                  <Field.Label render={<Label />}>Email Address</Field.Label>
+                  <Input
+                    {...field}
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.error && (
+                    <Field.Error match={true} className="text-xs text-destructive">
+                      {fieldState.error.message}
+                    </Field.Error>
+                  )}
+                </Field.Root>
+              )}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="••••••••"
-              />
-            </div>
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field.Root invalid={fieldState.invalid} className="space-y-2">
+                  <Field.Label render={<Label />}>Password</Field.Label>
+                  <Input
+                    {...field}
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.error && (
+                    <Field.Error match={true} className="text-xs text-destructive">
+                      {fieldState.error.message}
+                    </Field.Error>
+                  )}
+                </Field.Root>
+              )}
+            />
 
             <Button
               type="submit"

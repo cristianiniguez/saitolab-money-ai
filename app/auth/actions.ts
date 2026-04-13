@@ -2,25 +2,18 @@
 
 import { createInsForgeServerClient, setAuthCookies, clearAuthCookies } from '@/lib/insforge/server'
 import { redirect } from 'next/navigation'
+import type { SignInValues, SignUpValues, VerifyEmailValues } from '@/lib/schemas/auth'
 
-export async function signUpAction(formData: FormData) {
-  const email = String(formData.get('email') ?? '').trim()
-  const password = String(formData.get('password') ?? '')
-  const name = String(formData.get('name') ?? '').trim()
-
+export async function signUpAction(values: SignUpValues) {
   const insforge = createInsForgeServerClient()
-  const { data, error } = await insforge.auth.signUp({
-    email,
-    name,
-    password
-  })
+  const { data, error } = await insforge.auth.signUp(values)
 
   if (error) {
     return { error: error.message, success: false }
   }
 
   if (data?.requireEmailVerification) {
-    return { email, requireVerification: true, success: true }
+    return { email: values.email, requireVerification: true, success: true }
   }
 
   // If no verification required, they are signed in (not likely based on our config, but handled just in case)
@@ -32,15 +25,9 @@ export async function signUpAction(formData: FormData) {
   return { error: 'An unexpected error occurred during sign up.', success: false }
 }
 
-export async function verifyEmailAction(formData: FormData) {
-  const email = String(formData.get('email') ?? '').trim()
-  const otp = String(formData.get('otp') ?? '').trim()
-
+export async function verifyEmailAction(values: VerifyEmailValues) {
   const insforge = createInsForgeServerClient()
-  const { data, error } = await insforge.auth.verifyEmail({
-    email,
-    otp
-  })
+  const { data, error } = await insforge.auth.verifyEmail(values)
 
   // Data should contain user, accessToken and refreshToken
   if (error || !data?.accessToken || !data?.refreshToken) {
@@ -51,15 +38,9 @@ export async function verifyEmailAction(formData: FormData) {
   return { success: true }
 }
 
-export async function signInAction(formData: FormData) {
-  const email = String(formData.get('email') ?? '').trim()
-  const password = String(formData.get('password') ?? '')
-
+export async function signInAction(values: SignInValues) {
   const insforge = createInsForgeServerClient()
-  const { data, error } = await insforge.auth.signInWithPassword({
-    email,
-    password
-  })
+  const { data, error } = await insforge.auth.signInWithPassword(values)
 
   if (error || !data?.accessToken || !data?.refreshToken) {
     if (error?.statusCode === 403) {

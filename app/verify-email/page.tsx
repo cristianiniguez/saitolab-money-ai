@@ -1,8 +1,12 @@
 'use client'
 
-import { Suspense, useState, useTransition, useEffect } from 'react'
+import { Suspense, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Field } from '@base-ui/react/field'
 import { verifyEmailAction } from '../auth/actions'
+import { verifyEmailSchema, type VerifyEmailValues } from '@/lib/schemas/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,29 +17,24 @@ function VerifyEmailForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  const initialEmail = searchParams.get('email') || ''
-  const [email, setEmail] = useState(initialEmail)
+  const form = useForm<VerifyEmailValues>({
+    defaultValues: { email: searchParams.get('email') ?? '', otp: '' },
+    resolver: zodResolver(verifyEmailSchema)
+  })
 
-  useEffect(() => {
-    if (!initialEmail) {
-      // Small heads up if user reaches here without an email param.
-    }
-  }, [initialEmail])
+  const email = form.watch('email')
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError(null)
-    const formData = new FormData(e.currentTarget)
-
+  const onSubmit = (data: VerifyEmailValues) => {
+    setServerError(null)
     startTransition(async () => {
-      const res = await verifyEmailAction(formData)
+      const res = await verifyEmailAction(data)
       if (res.success) {
         router.push('/')
       }
       else {
-        setError(res.error || 'Failed to verify email. Please check your code.')
+        setServerError(res.error || 'Failed to verify email. Please check your code.')
       }
     })
   }
@@ -52,40 +51,59 @@ function VerifyEmailForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {error && (
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          {serverError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{serverError}</AlertDescription>
             </Alert>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Confirm your Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="bg-zinc-50"
-            />
-          </div>
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field.Root invalid={fieldState.invalid} className="space-y-2">
+                <Field.Label render={<Label />}>Confirm your Email</Field.Label>
+                <Input
+                  {...field}
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  aria-invalid={fieldState.invalid}
+                  className="bg-zinc-50"
+                />
+                {fieldState.error && (
+                  <Field.Error match={true} className="text-xs text-destructive">
+                    {fieldState.error.message}
+                  </Field.Error>
+                )}
+              </Field.Root>
+            )}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="otp">6-Digit Code</Label>
-            <Input
-              id="otp"
-              name="otp"
-              type="text"
-              required
-              maxLength={6}
-              pattern="\d{6}"
-              className="tracking-[0.25em] font-mono text-center text-xl"
-              placeholder="000000"
-            />
-          </div>
+          <Controller
+            name="otp"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field.Root invalid={fieldState.invalid} className="space-y-2">
+                <Field.Label render={<Label />}>6-Digit Code</Field.Label>
+                <Input
+                  {...field}
+                  id="otp"
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  aria-invalid={fieldState.invalid}
+                  className="tracking-[0.25em] font-mono text-center text-xl"
+                />
+                {fieldState.error && (
+                  <Field.Error match={true} className="text-xs text-destructive">
+                    {fieldState.error.message}
+                  </Field.Error>
+                )}
+              </Field.Root>
+            )}
+          />
 
           <Button
             type="submit"

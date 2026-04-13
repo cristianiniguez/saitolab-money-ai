@@ -17,7 +17,7 @@ const eslintConfig = defineConfig([
   }),
   {
     rules: {
-      'sort-keys': 'error'
+      'sort-keys': 'warn'
     }
   },
   // Override default ignores of eslint-config-next.

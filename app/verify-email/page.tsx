@@ -1,21 +1,20 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { Suspense, useState, useTransition, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { verifyEmailAction } from '../auth/actions'
-import { Suspense } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 function VerifyEmailForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  
+
   const initialEmail = searchParams.get('email') || ''
   const [email, setEmail] = useState(initialEmail)
 
@@ -29,12 +28,13 @@ function VerifyEmailForm() {
     e.preventDefault()
     setError(null)
     const formData = new FormData(e.currentTarget)
-    
+
     startTransition(async () => {
       const res = await verifyEmailAction(formData)
       if (res.success) {
         router.push('/')
-      } else {
+      }
+      else {
         setError(res.error || 'Failed to verify email. Please check your code.')
       }
     })
@@ -45,7 +45,10 @@ function VerifyEmailForm() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold text-foreground">Check Your Email</CardTitle>
         <CardDescription className="text-muted-foreground">
-          We sent a 6-digit verification code to <span className="font-semibold text-foreground">{email || 'your email address'}</span>.
+          We sent a 6-digit verification code to
+          {' '}
+          <span className="font-semibold text-foreground">{email || 'your email address'}</span>
+          .
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -64,7 +67,7 @@ function VerifyEmailForm() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="bg-zinc-50"
             />

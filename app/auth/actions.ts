@@ -11,25 +11,25 @@ export async function signUpAction(formData: FormData) {
   const insforge = createInsForgeServerClient()
   const { data, error } = await insforge.auth.signUp({
     email,
-    password,
-    name
+    name,
+    password
   })
 
   if (error) {
-    return { success: false, error: error.message }
+    return { error: error.message, success: false }
   }
 
   if (data?.requireEmailVerification) {
-    return { success: true, requireVerification: true, email }
+    return { email, requireVerification: true, success: true }
   }
 
   // If no verification required, they are signed in (not likely based on our config, but handled just in case)
   if (data?.accessToken && data?.refreshToken) {
     await setAuthCookies(data.accessToken, data.refreshToken)
-    return { success: true, redirect: '/' }
+    return { redirect: '/', success: true }
   }
 
-  return { success: false, error: 'An unexpected error occurred during sign up.' }
+  return { error: 'An unexpected error occurred during sign up.', success: false }
 }
 
 export async function verifyEmailAction(formData: FormData) {
@@ -44,7 +44,7 @@ export async function verifyEmailAction(formData: FormData) {
 
   // Data should contain user, accessToken and refreshToken
   if (error || !data?.accessToken || !data?.refreshToken) {
-    return { success: false, error: error?.message ?? 'Invalid code.' }
+    return { error: error?.message ?? 'Invalid code.', success: false }
   }
 
   await setAuthCookies(data.accessToken, data.refreshToken)
@@ -64,9 +64,9 @@ export async function signInAction(formData: FormData) {
   if (error || !data?.accessToken || !data?.refreshToken) {
     if (error?.statusCode === 403) {
       // Email not verified
-      return { success: false, requireVerification: true, error: 'Email not verified.' }
+      return { error: 'Email not verified.', requireVerification: true, success: false }
     }
-    return { success: false, error: error?.message ?? 'Sign in failed.' }
+    return { error: error?.message ?? 'Sign in failed.', success: false }
   }
 
   await setAuthCookies(data.accessToken, data.refreshToken)

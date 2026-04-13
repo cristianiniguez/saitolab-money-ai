@@ -6,17 +6,17 @@ const refreshCookie = 'insforge_refresh_token'
 
 const authCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  path: '/',
   sameSite: 'lax' as const,
-  path: '/'
+  secure: process.env.NODE_ENV === 'production'
 }
 
 export function createInsForgeServerClient(accessToken?: string) {
   return createClient({
-    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_URL!,
     anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
-    isServerMode: true,
-    edgeFunctionToken: accessToken
+    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_URL!,
+    edgeFunctionToken: accessToken,
+    isServerMode: true
   })
 }
 

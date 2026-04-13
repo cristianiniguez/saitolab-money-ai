@@ -1,28 +1,28 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Header from "./components/header";
-import { ThemeProvider } from "@/components/theme-provider";
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
+import Header from './components/header'
+import './globals.css'
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  subsets: ['latin'],
+  variable: '--font-geist-sans'
+})
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  subsets: ['latin'],
+  variable: '--font-geist-mono'
+})
 
 export const metadata: Metadata = {
-  title: "SaitoLab Money",
-  description: "Track your incomes and expenses.",
-};
+  description: 'Track your incomes and expenses.',
+  title: 'SaitoLab Money'
+}
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html
@@ -44,5 +44,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

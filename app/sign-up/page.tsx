@@ -4,11 +4,11 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUpAction } from '../auth/actions'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -19,17 +19,19 @@ export default function SignUpPage() {
     e.preventDefault()
     setError(null)
     const formData = new FormData(e.currentTarget)
-    
+
     startTransition(async () => {
       const res = await signUpAction(formData)
       if (res.success) {
         if (res.requireVerification) {
-          const email = formData.get('email') as string;
+          const email = formData.get('email') as string
           router.push(`/verify-email?email=${encodeURIComponent(email)}`)
-        } else if (res.redirect) {
+        }
+        else if (res.redirect) {
           router.push(res.redirect)
         }
-      } else {
+      }
+      else {
         setError(res.error || 'Failed to sign up')
       }
     })
@@ -98,7 +100,8 @@ export default function SignUpPage() {
           </form>
 
           <div className="mt-8 text-center text-sm text-zinc-600">
-            Already have an account?{' '}
+            Already have an account?
+            {' '}
             <Link href="/sign-in" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
               Sign in
             </Link>

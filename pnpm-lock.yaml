@@ -45,6 +45,12 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.4
+        version: 9.39.4
+      '@stylistic/eslint-plugin':
+        specifier: ^5.10.0
+        version: 5.10.0(eslint@9.39.4(jiti@2.6.1))
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.2.2
@@ -659,6 +665,12 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@stylistic/eslint-plugin@5.10.0':
+    resolution: {integrity: sha512-nPK52ZHvot8Ju/0A4ucSX1dcPV2/1clx0kLcH5wDmrE4naKso7TUC/voUyU1O9OTKTrR6MYip6LP0ogEMQ9jPQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^9.0.0 || ^10.0.0
 
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
@@ -3645,6 +3657,16 @@ snapshots:
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@stylistic/eslint-plugin@5.10.0(eslint@9.39.4(jiti@2.6.1))':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.6.1))
+      '@typescript-eslint/types': 8.58.1
+      eslint: 9.39.4(jiti@2.6.1)
+      eslint-visitor-keys: 4.2.1
+      espree: 10.4.0
+      estraverse: 5.3.0
+      picomatch: 4.0.4
 
   '@supabase/node-fetch@2.6.15':
     dependencies:

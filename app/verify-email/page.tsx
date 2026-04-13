@@ -4,6 +4,11 @@ import { useState, useTransition, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { verifyEmailAction } from '../auth/actions'
 import { Suspense } from 'react'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 function VerifyEmailForm() {
   const router = useRouter()
@@ -36,67 +41,66 @@ function VerifyEmailForm() {
   }
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-zinc-100">
-      <h1 className="text-2xl font-bold text-center text-zinc-900 mb-2">Check Your Email</h1>
-      <p className="text-sm text-center text-zinc-500 mb-8">
-        We sent a 6-digit verification code to <span className="font-semibold text-zinc-700">{email || 'your email address'}</span>.
-      </p>
+    <Card className="w-full max-w-md shadow-xl border-border">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-bold text-foreground">Check Your Email</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          We sent a 6-digit verification code to <span className="font-semibold text-foreground">{email || 'your email address'}</span>.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
-            {error}
+          <div className="space-y-2">
+            <Label htmlFor="email">Confirm your Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="bg-zinc-50"
+            />
           </div>
-        )}
 
-        <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-1" htmlFor="email">
-            Confirm your Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-zinc-50"
-            placeholder="you@example.com"
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="otp">6-Digit Code</Label>
+            <Input
+              id="otp"
+              name="otp"
+              type="text"
+              required
+              maxLength={6}
+              pattern="\d{6}"
+              className="tracking-[0.25em] font-mono text-center text-xl"
+              placeholder="000000"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-1" htmlFor="otp">
-            6-Digit Code
-          </label>
-          <input
-            id="otp"
-            name="otp"
-            type="text"
-            required
-            maxLength={6}
-            pattern="\d{6}"
-            className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors tracking-[0.25em] font-mono text-center text-xl"
-            placeholder="000000"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50"
-        >
-          {isPending ? 'Verifying...' : 'Verify Email & Sign In'}
-        </button>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full"
+          >
+            {isPending ? 'Verifying...' : 'Verify Email & Sign In'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4">
-      <Suspense fallback={<div className="text-zinc-500">Loading...</div>}>
+    <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
+      <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
         <VerifyEmailForm />
       </Suspense>
     </div>

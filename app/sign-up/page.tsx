@@ -4,6 +4,11 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUpAction } from '../auth/actions'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -31,81 +36,75 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-zinc-100">
-        <h1 className="text-2xl font-bold text-center text-zinc-900 mb-2">Create Account</h1>
-        <p className="text-sm text-center text-zinc-500 mb-8">Join SaitoLab Money today</p>
+    <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
+      <Card className="w-full max-w-md shadow-xl border-border">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
+          <CardDescription className="text-muted-foreground">Join SaitoLab Money today</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
-              {error}
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                placeholder="Kylo Ren"
+              />
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1" htmlFor="name">
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              autoComplete="name"
-              required
-              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              placeholder="Kylo Ren"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={6}
+                placeholder="••••••••"
+              />
+              <p className="text-xs text-zinc-500 mt-1">Must be at least 6 characters.</p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full"
+            >
+              {isPending ? 'Creating account...' : 'Create Account'}
+            </Button>
+          </form>
+
+          <div className="mt-8 text-center text-sm text-zinc-600">
+            Already have an account?{' '}
+            <Link href="/sign-in" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
+              Sign in
+            </Link>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1" htmlFor="email">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              placeholder="••••••••"
-            />
-            <p className="text-xs text-zinc-500 mt-1">Must be at least 6 characters.</p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50"
-          >
-            {isPending ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center text-sm text-zinc-600">
-          Already have an account?{' '}
-          <Link href="/sign-in" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
-            Sign in
-          </Link>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

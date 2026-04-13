@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Field } from '@base-ui/react/field'
@@ -30,6 +29,7 @@ interface AccountModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   account?: Account | null
+  onSuccess: () => void
 }
 
 const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
@@ -38,8 +38,7 @@ const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
   wallet: 'Wallet'
 }
 
-export function AccountModal({ open, onOpenChange, account }: AccountModalProps) {
-  const router = useRouter()
+export function AccountModal({ open, onOpenChange, account, onSuccess }: AccountModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -62,8 +61,8 @@ export function AccountModal({ open, onOpenChange, account }: AccountModalProps)
         ? await updateAccount(account.id, data)
         : await createAccount(data)
       if (res.success) {
-        router.refresh()
         onOpenChange(false)
+        onSuccess()
       }
       else {
         setServerError(res.error ?? 'Something went wrong')

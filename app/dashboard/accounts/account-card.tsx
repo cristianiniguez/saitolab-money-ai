@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { deleteAccount } from './actions'
@@ -25,20 +24,20 @@ const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> 
 interface AccountCardProps {
   account: Account
   onEdit: () => void
+  onSuccess: () => void
 }
 
-export function AccountCard({ account, onEdit }: AccountCardProps) {
-  const router = useRouter()
+export function AccountCard({ account, onEdit, onSuccess }: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const badge = TYPE_BADGE[account.type]
 
   const handleConfirmDelete = () => {
+    setConfirmOpen(false)
     startTransition(async () => {
       await deleteAccount(account.id)
-      router.refresh()
+      onSuccess()
     })
-    setConfirmOpen(false)
   }
 
   return (

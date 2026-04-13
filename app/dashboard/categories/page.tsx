@@ -1,0 +1,24 @@
+import { redirect } from 'next/navigation'
+import { getCurrentUser, getAccessToken, createInsForgeServerClient } from '@/lib/insforge/server'
+import { type Category } from '@/lib/schemas/categories'
+import { CategoriesClient } from './categories-client'
+
+export default async function CategoriesPage() {
+  const user = await getCurrentUser()
+  if (!user) redirect('/sign-in')
+
+  const token = await getAccessToken()
+  const insforge = createInsForgeServerClient(token!)
+  const { data: categories } = await insforge.database
+    .from('categories')
+    .select('*')
+    .eq('user_id', user.id)
+
+  return (
+    <div className="flex flex-col flex-1 bg-muted/20 font-sans p-8">
+      <main className="w-full max-w-5xl mx-auto py-8">
+        <CategoriesClient categories={(categories as Category[]) ?? []} />
+      </main>
+    </div>
+  )
+}

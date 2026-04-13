@@ -32,9 +32,13 @@ export async function clearAuthCookies() {
   cookieStore.delete(refreshCookie)
 }
 
-export async function getCurrentUser() {
+export async function getAccessToken(): Promise<string | null> {
   const cookieStore = await cookies()
-  const accessToken = cookieStore.get(accessCookie)?.value
+  return cookieStore.get(accessCookie)?.value ?? null
+}
+
+export async function getCurrentUser() {
+  const accessToken = await getAccessToken()
   if (!accessToken) return null
 
   const insforge = createInsForgeServerClient(accessToken)

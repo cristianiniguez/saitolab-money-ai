@@ -15,6 +15,12 @@ const eslintConfig = defineConfig([
     quotes: 'single',
     semi: false
   }),
+  {
+    rules: {
+      '@stylistic/arrow-parens': 'off',
+      '@stylistic/brace-style': 'off'
+    }
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

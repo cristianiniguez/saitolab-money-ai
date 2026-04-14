@@ -54,6 +54,18 @@ export async function signInAction(values: SignInValues) {
   return { success: true }
 }
 
+export async function exchangeOAuthCodeAction(code: string, codeVerifier: string) {
+  const insforge = createInsForgeServerClient()
+  const { data, error } = await insforge.auth.exchangeOAuthCode(code, codeVerifier)
+
+  if (error || !data?.accessToken || !data?.refreshToken) {
+    return { error: error?.message ?? 'Google sign in failed.', success: false }
+  }
+
+  await setAuthCookies(data.accessToken, data.refreshToken)
+  return { success: true }
+}
+
 export async function signOutAction() {
   const insforge = createInsForgeServerClient()
   await insforge.auth.signOut()

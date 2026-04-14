@@ -4,14 +4,13 @@ import { Suspense, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Field } from '@base-ui/react/field'
 import { verifyEmailAction } from '../auth/actions'
 import { verifyEmailSchema, type VerifyEmailValues } from '@/lib/schemas/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 function VerifyEmailForm() {
   const router = useRouter()
@@ -62,8 +61,8 @@ function VerifyEmailForm() {
             name="email"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Confirm your Email</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Confirm your Email</FieldLabel>
                 <Input
                   {...field}
                   id="email"
@@ -72,12 +71,8 @@ function VerifyEmailForm() {
                   aria-invalid={fieldState.invalid}
                   className="bg-zinc-50"
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -85,8 +80,8 @@ function VerifyEmailForm() {
             name="otp"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>6-Digit Code</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>6-Digit Code</FieldLabel>
                 <Input
                   {...field}
                   id="otp"
@@ -96,12 +91,8 @@ function VerifyEmailForm() {
                   aria-invalid={fieldState.invalid}
                   className="tracking-[0.25em] font-mono text-center text-xl"
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 

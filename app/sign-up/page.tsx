@@ -5,15 +5,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Field } from '@base-ui/react/field'
 import { signUpAction } from '../auth/actions'
 import { signUpSchema, type SignUpValues } from '@/lib/schemas/auth'
 import { createInsForgeClient } from '@/lib/insforge/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -94,8 +93,8 @@ export default function SignUpPage() {
               name="name"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                  <Field.Label render={<Label />}>Full Name</Field.Label>
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Full Name</FieldLabel>
                   <Input
                     {...field}
                     id="name"
@@ -104,12 +103,8 @@ export default function SignUpPage() {
                     placeholder="Kylo Ren"
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.error && (
-                    <Field.Error match={true} className="text-xs text-destructive">
-                      {fieldState.error.message}
-                    </Field.Error>
-                  )}
-                </Field.Root>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
@@ -117,8 +112,8 @@ export default function SignUpPage() {
               name="email"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                  <Field.Label render={<Label />}>Email Address</Field.Label>
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Email Address</FieldLabel>
                   <Input
                     {...field}
                     id="email"
@@ -127,12 +122,8 @@ export default function SignUpPage() {
                     placeholder="you@example.com"
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.error && (
-                    <Field.Error match={true} className="text-xs text-destructive">
-                      {fieldState.error.message}
-                    </Field.Error>
-                  )}
-                </Field.Root>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
@@ -140,8 +131,8 @@ export default function SignUpPage() {
               name="password"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                  <Field.Label render={<Label />}>Password</Field.Label>
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Password</FieldLabel>
                   <Input
                     {...field}
                     id="password"
@@ -150,12 +141,8 @@ export default function SignUpPage() {
                     placeholder="••••••••"
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.error && (
-                    <Field.Error match={true} className="text-xs text-destructive">
-                      {fieldState.error.message}
-                    </Field.Error>
-                  )}
-                </Field.Root>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 

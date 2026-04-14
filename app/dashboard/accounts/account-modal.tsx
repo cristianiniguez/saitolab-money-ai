@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Field } from '@base-ui/react/field'
 import { accountSchema, ACCOUNT_TYPES, type Account, type AccountValues } from '@/lib/schemas/accounts'
 import { createAccount, updateAccount } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,8 +14,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -88,8 +87,8 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
             name="name"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Account Name</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Account Name</FieldLabel>
                 <Input
                   {...field}
                   id="name"
@@ -97,12 +96,8 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
                   placeholder="e.g. Chase Checking"
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -110,8 +105,8 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
             name="type"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Account Type</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Account Type</FieldLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
@@ -131,12 +126,8 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
                     ))}
                   </SelectContent>
                 </Select>
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 

@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format, parseISO } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
-import { Field } from '@base-ui/react/field'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import {
   transactionSchema,
   TRANSACTION_TYPES,
@@ -26,7 +26,6 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Popover,
   PopoverContent,
@@ -139,20 +138,16 @@ export function TransactionModal({
             name="name"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Name</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Name</FieldLabel>
                 <Input
                   {...field}
                   type="text"
                   placeholder="e.g. Monthly salary"
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -163,22 +158,20 @@ export function TransactionModal({
             render={({ field, fieldState }) => {
               const selectedDate = field.value ? parseISO(field.value) : undefined
               return (
-                <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                  <Field.Label render={<Label />}>Date</Field.Label>
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Date</FieldLabel>
                   <Popover>
-                    <PopoverTrigger
-                      render={(
-                        <Button
-                          variant="outline"
-                          aria-invalid={fieldState.invalid}
-                          className="w-full justify-start font-normal"
-                        />
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {selectedDate
-                        ? format(selectedDate, 'PPP')
-                        : <span className="text-muted-foreground">Pick a date</span>}
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        aria-invalid={fieldState.invalid}
+                        className="w-full justify-start font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {selectedDate
+                          ? format(selectedDate, 'PPP')
+                          : <span className="text-muted-foreground">Pick a date</span>}
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -188,12 +181,8 @@ export function TransactionModal({
                       />
                     </PopoverContent>
                   </Popover>
-                  {fieldState.error && (
-                    <Field.Error match={true} className="text-xs text-destructive">
-                      {fieldState.error.message}
-                    </Field.Error>
-                  )}
-                </Field.Root>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
               )
             }}
           />
@@ -203,8 +192,8 @@ export function TransactionModal({
             name="amount"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Amount</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Amount</FieldLabel>
                 <Input
                   type="number"
                   step="0.01"
@@ -216,12 +205,8 @@ export function TransactionModal({
                   onBlur={field.onBlur}
                   name={field.name}
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -230,8 +215,8 @@ export function TransactionModal({
             name="type"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Type</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Type</FieldLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
                     <SelectValue />
@@ -244,12 +229,8 @@ export function TransactionModal({
                     ))}
                   </SelectContent>
                 </Select>
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -258,8 +239,8 @@ export function TransactionModal({
             name="account_id"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Account</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Account</FieldLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
                     <SelectValue placeholder="Select an account" />
@@ -272,12 +253,8 @@ export function TransactionModal({
                     ))}
                   </SelectContent>
                 </Select>
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
@@ -286,12 +263,12 @@ export function TransactionModal({
             name="category_id"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>
                   Category
                   {' '}
                   <span className="text-muted-foreground font-normal">(optional)</span>
-                </Field.Label>
+                </FieldLabel>
                 <Select
                   value={field.value ?? NONE_CATEGORY_VALUE}
                   onValueChange={val => field.onChange(val === NONE_CATEGORY_VALUE ? undefined : val)}
@@ -308,12 +285,8 @@ export function TransactionModal({
                     ))}
                   </SelectContent>
                 </Select>
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 

@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Field } from '@base-ui/react/field'
 import { categorySchema, type Category, type CategoryValues } from '@/lib/schemas/categories'
 import { createCategory, updateCategory } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,8 +14,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 interface CategoryModalProps {
   open: boolean
@@ -75,8 +74,8 @@ export function CategoryModal({ open, onOpenChange, category, onSuccess }: Categ
             name="name"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Category Name</Field.Label>
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Category Name</FieldLabel>
                 <Input
                   {...field}
                   id="name"
@@ -84,12 +83,8 @@ export function CategoryModal({ open, onOpenChange, category, onSuccess }: Categ
                   placeholder="e.g. Groceries"
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 

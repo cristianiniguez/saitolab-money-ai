@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { format, parseISO } from 'date-fns'
+import { CalendarIcon } from 'lucide-react'
 import { Field } from '@base-ui/react/field'
 import {
   transactionSchema,
@@ -15,6 +17,7 @@ import { type Category } from '@/lib/schemas/categories'
 import { createTransaction, updateTransaction } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +27,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -152,21 +160,42 @@ export function TransactionModal({
           <Controller
             name="date"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <Field.Root invalid={fieldState.invalid} className="space-y-2">
-                <Field.Label render={<Label />}>Date</Field.Label>
-                <Input
-                  {...field}
-                  type="date"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.error && (
-                  <Field.Error match={true} className="text-xs text-destructive">
-                    {fieldState.error.message}
-                  </Field.Error>
-                )}
-              </Field.Root>
-            )}
+            render={({ field, fieldState }) => {
+              const selectedDate = field.value ? parseISO(field.value) : undefined
+              return (
+                <Field.Root invalid={fieldState.invalid} className="space-y-2">
+                  <Field.Label render={<Label />}>Date</Field.Label>
+                  <Popover>
+                    <PopoverTrigger
+                      render={(
+                        <Button
+                          variant="outline"
+                          aria-invalid={fieldState.invalid}
+                          className="w-full justify-start font-normal"
+                        />
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      {selectedDate
+                        ? format(selectedDate, 'PPP')
+                        : <span className="text-muted-foreground">Pick a date</span>}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={date => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {fieldState.error && (
+                    <Field.Error match={true} className="text-xs text-destructive">
+                      {fieldState.error.message}
+                    </Field.Error>
+                  )}
+                </Field.Root>
+              )
+            }}
           />
 
           {/* Amount */}

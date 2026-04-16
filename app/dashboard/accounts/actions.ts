@@ -18,6 +18,7 @@ export async function createAccount(values: AccountValues): Promise<ActionResult
   const { error } = await insforge.database.from('accounts').insert({
     name: parsed.data.name,
     type: parsed.data.type,
+    slug: parsed.data.slug,
     user_id: user.id
   })
 
@@ -38,7 +39,7 @@ export async function updateAccount(id: string, values: AccountValues): Promise<
   const insforge = createInsForgeServerClient(token!)
   const { error } = await insforge.database
     .from('accounts')
-    .update({ name: parsed.data.name, type: parsed.data.type })
+    .update({ name: parsed.data.name, type: parsed.data.type, slug: parsed.data.slug })
     .eq('id', id)
     .eq('user_id', user.id)
 

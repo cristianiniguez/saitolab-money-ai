@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { accountSchema, ACCOUNT_TYPES, type Account, type AccountValues } from '@/lib/schemas/accounts'
+import { slugify } from '@/lib/utils/slugify'
 import { createAccount, updateAccount } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -42,13 +43,19 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<AccountValues>({
-    defaultValues: { name: '', type: 'bank' },
+    defaultValues: { name: '', type: 'bank', slug: '' },
     resolver: zodResolver(accountSchema)
   })
 
+  const nameValue = form.watch('name')
+
+  useEffect(() => {
+    form.setValue('slug', slugify(nameValue))
+  }, [nameValue, form])
+
   useEffect(() => {
     if (open) {
-      form.reset(account ? { name: account.name, type: account.type } : { name: '', type: 'bank' })
+      form.reset(account ? { name: account.name, type: account.type, slug: account.slug } : { name: '', type: 'bank', slug: '' })
       setServerError(null)
     }
   }, [open, account, form])
@@ -94,6 +101,25 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
                   id="name"
                   type="text"
                   placeholder="e.g. Chase Checking"
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="slug"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Slug</FieldLabel>
+                <Input
+                  {...field}
+                  id="slug"
+                  type="text"
+                  readOnly
+                  className="bg-muted text-muted-foreground cursor-not-allowed"
                   aria-invalid={fieldState.invalid}
                 />
                 <FieldError className="text-xs">{fieldState.error?.message}</FieldError>

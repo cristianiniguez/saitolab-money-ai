@@ -17,6 +17,7 @@ export async function createCategory(values: CategoryValues): Promise<ActionResu
   const insforge = createInsForgeServerClient(token!)
   const { error } = await insforge.database.from('categories').insert({
     name: parsed.data.name,
+    slug: parsed.data.slug,
     user_id: user.id
   })
 
@@ -37,7 +38,7 @@ export async function updateCategory(id: string, values: CategoryValues): Promis
   const insforge = createInsForgeServerClient(token!)
   const { error } = await insforge.database
     .from('categories')
-    .update({ name: parsed.data.name })
+    .update({ name: parsed.data.name, slug: parsed.data.slug })
     .eq('id', id)
     .eq('user_id', user.id)
 

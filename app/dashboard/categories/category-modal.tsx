@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { categorySchema, type Category, type CategoryValues } from '@/lib/schemas/categories'
+import { slugify } from '@/lib/utils/slugify'
 import { createCategory, updateCategory } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -29,13 +30,19 @@ export function CategoryModal({ open, onOpenChange, category, onSuccess }: Categ
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<CategoryValues>({
-    defaultValues: { name: '' },
+    defaultValues: { name: '', slug: '' },
     resolver: zodResolver(categorySchema)
   })
 
+  const nameValue = form.watch('name')
+
+  useEffect(() => {
+    form.setValue('slug', slugify(nameValue))
+  }, [nameValue, form])
+
   useEffect(() => {
     if (open) {
-      form.reset(category ? { name: category.name } : { name: '' })
+      form.reset(category ? { name: category.name, slug: category.slug } : { name: '', slug: '' })
       setServerError(null)
     }
   }, [open, category, form])
@@ -81,6 +88,25 @@ export function CategoryModal({ open, onOpenChange, category, onSuccess }: Categ
                   id="name"
                   type="text"
                   placeholder="e.g. Groceries"
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="slug"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Slug</FieldLabel>
+                <Input
+                  {...field}
+                  id="slug"
+                  type="text"
+                  readOnly
+                  className="bg-muted text-muted-foreground cursor-not-allowed"
                   aria-invalid={fieldState.invalid}
                 />
                 <FieldError className="text-xs">{fieldState.error?.message}</FieldError>

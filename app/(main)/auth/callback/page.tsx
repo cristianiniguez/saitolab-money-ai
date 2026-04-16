@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { exchangeOAuthCodeAction } from '../actions'
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
@@ -50,5 +50,17 @@ export default function AuthCallbackPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
       <p className="text-muted-foreground text-sm">Signing you in…</p>
     </div>
+  )
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   )
 }

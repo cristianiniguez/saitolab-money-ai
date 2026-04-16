@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getCurrentUser } from '@/lib/insforge/server'
-import { signOutAction } from '@/app/auth/actions'
+import { signOutAction } from '@/app/(main)/auth/actions'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ModeToggle } from '@/components/theme-toggle'
 

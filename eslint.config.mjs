@@ -28,6 +28,7 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'components/ui/**',
+    'hooks/**',
     'next-env.d.ts'
   ])
 ])

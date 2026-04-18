@@ -1,0 +1,51 @@
+name,date,amount,type,account_slug,category_slug
+Monthly Salary,2024-01-01,4500,income,bank-of-america,salary
+Grocery Run,2024-01-03,87.50,expense,bank-of-america,food
+Netflix Subscription,2024-01-05,15.99,expense,union-bank-trust,entertainment
+Bus Pass,2024-01-06,45,expense,raiffeisenbank-perg-egen,transport
+Doctor Visit,2024-01-08,120,expense,bank-of-america,health
+Amazon Purchase,2024-01-10,63.40,expense,union-bank-trust,shopping
+Electric Bill,2024-01-12,98.75,expense,bank-of-america,utilities
+Online Course,2024-01-14,199,expense,raiffeisenbank-perg-egen,education
+Freelance Payment,2024-01-15,1200,income,iberiabank,salary
+Restaurant Dinner,2024-01-17,52.80,expense,bank-of-america,food
+Uber Ride,2024-01-18,18.50,expense,union-bank-trust,transport
+Gym Membership,2024-01-20,39.99,expense,bank-of-america,health
+Spotify,2024-01-21,9.99,expense,mnchner-bank-eg,entertainment
+Flight to Berlin,2024-01-23,280,expense,raiffeisenbank-perg-egen,travel
+Supermarket,2024-01-25,112.30,expense,bank-of-america,food
+Monthly Salary,2024-02-01,4500,income,bank-of-america,salary
+Dividend Payment,2024-02-02,340,income,iberiabank,
+Coffee Shop,2024-02-04,6.80,expense,union-bank-trust,food
+Internet Bill,2024-02-06,49.99,expense,bank-of-america,utilities
+Taxi,2024-02-07,22,expense,mnchner-bank-eg,transport
+Book Purchase,2024-02-09,34.90,expense,raiffeisenbank-perg-egen,education
+Cinema Tickets,2024-02-11,28,expense,union-bank-trust,entertainment
+Pharmacy,2024-02-13,45.60,expense,bank-of-america,health
+Hotel Stay,2024-02-15,220,expense,raiffeisenbank-perg-egen,travel
+Clothing Store,2024-02-17,95,expense,bank-of-america,shopping
+Consulting Fee,2024-02-20,2000,income,iberiabank,salary
+Lunch,2024-02-22,14.50,expense,union-bank-trust,food
+Gas Bill,2024-02-24,73.20,expense,bank-of-america,utilities
+Metro Card,2024-02-26,30,expense,mnchner-bank-eg,transport
+Sports Equipment,2024-02-28,149,expense,bank-of-america,shopping
+Monthly Salary,2024-03-01,4500,income,bank-of-america,salary
+Crypto Sale,2024-03-03,890,income,iberiabank,
+Sushi Dinner,2024-03-05,67.40,expense,bank-of-america,food
+Water Bill,2024-03-07,28.50,expense,raiffeisenbank-perg-egen,utilities
+Train Ticket,2024-03-09,55,expense,mnchner-bank-eg,transport
+Dentist Appointment,2024-03-11,180,expense,bank-of-america,health
+Kindle Book,2024-03-13,12.99,expense,union-bank-trust,education
+Concert Tickets,2024-03-15,95,expense,bank-of-america,entertainment
+Weekend Trip,2024-03-17,450,expense,raiffeisenbank-perg-egen,travel
+Home Decor,2024-03-19,230,expense,bank-of-america,shopping
+Bonus Payment,2024-03-21,1500,income,bank-of-america,salary
+Pizza Night,2024-03-22,32.60,expense,union-bank-trust,food
+Phone Bill,2024-03-24,55.99,expense,mnchner-bank-eg,utilities
+Bicycle Repair,2024-03-26,40,expense,raiffeisenbank-perg-egen,transport
+Eye Exam,2024-03-28,90,expense,bank-of-america,health
+Workshop Fee,2024-03-29,75,expense,union-bank-trust,education
+Game Purchase,2024-03-30,59.99,expense,mnchner-bank-eg,entertainment
+Miscellaneous,2024-03-31,28.40,expense,bank-of-america,other
+Staking Reward,2024-03-31,120,income,iberiabank,
+Side Project Income,2024-03-31,600,income,union-bank-trust,salary

@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { PlusIcon, TagIcon } from 'lucide-react'
+import { PlusIcon, TagIcon, UploadIcon } from 'lucide-react'
 import { type Category } from '@/lib/schemas/categories'
 import { CategoryCard } from './category-card'
 import { CategoryModal } from './category-modal'
+import { ImportCsvModal } from './import-csv-modal'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -32,6 +33,7 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   const handleSuccess = () => {
     startRefreshTransition(() => {
@@ -55,10 +57,16 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories</h1>
-        <Button onClick={openCreate} disabled={isRefreshing}>
-          <PlusIcon />
-          New Category
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)} disabled={isRefreshing}>
+            <UploadIcon />
+            Import CSV
+          </Button>
+          <Button onClick={openCreate} disabled={isRefreshing}>
+            <PlusIcon />
+            New Category
+          </Button>
+        </div>
       </div>
 
       {isRefreshing
@@ -104,6 +112,11 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
         open={modalOpen}
         onOpenChange={setModalOpen}
         category={selectedCategory}
+        onSuccess={handleSuccess}
+      />
+      <ImportCsvModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
         onSuccess={handleSuccess}
       />
     </div>

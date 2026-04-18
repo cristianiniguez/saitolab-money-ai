@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { PlusIcon, WalletIcon } from 'lucide-react'
+import { PlusIcon, UploadIcon, WalletIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { AccountCard } from './account-card'
 import { AccountModal } from './account-modal'
+import { ImportCsvModal } from './import-csv-modal'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -35,6 +36,7 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   const handleSuccess = () => {
     startRefreshTransition(() => {
@@ -58,10 +60,16 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Accounts</h1>
-        <Button onClick={openCreate} disabled={isRefreshing}>
-          <PlusIcon />
-          New Account
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)} disabled={isRefreshing}>
+            <UploadIcon />
+            Import CSV
+          </Button>
+          <Button onClick={openCreate} disabled={isRefreshing}>
+            <PlusIcon />
+            New Account
+          </Button>
+        </div>
       </div>
 
       {isRefreshing
@@ -107,6 +115,11 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
         open={modalOpen}
         onOpenChange={setModalOpen}
         account={selectedAccount}
+        onSuccess={handleSuccess}
+      />
+      <ImportCsvModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
         onSuccess={handleSuccess}
       />
     </div>

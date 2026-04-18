@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { PlusIcon, ReceiptIcon } from 'lucide-react'
+import { PlusIcon, ReceiptIcon, UploadIcon } from 'lucide-react'
 import { type Transaction } from '@/lib/schemas/transactions'
 import { type Account } from '@/lib/schemas/accounts'
 import { type Category } from '@/lib/schemas/categories'
 import { TransactionRow } from './transaction-row'
 import { TransactionModal } from './transaction-modal'
+import { ImportCsvModal } from './import-csv-modal'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -41,6 +42,7 @@ export function TransactionsClient({ transactions, accounts, categories }: Trans
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   const handleSuccess = () => {
     startRefreshTransition(() => {
@@ -64,10 +66,16 @@ export function TransactionsClient({ transactions, accounts, categories }: Trans
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Transactions</h1>
-        <Button onClick={openCreate} disabled={isRefreshing}>
-          <PlusIcon />
-          New Transaction
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)} disabled={isRefreshing}>
+            <UploadIcon />
+            Import CSV
+          </Button>
+          <Button onClick={openCreate} disabled={isRefreshing}>
+            <PlusIcon />
+            New Transaction
+          </Button>
+        </div>
       </div>
 
       {isRefreshing
@@ -145,6 +153,11 @@ export function TransactionsClient({ transactions, accounts, categories }: Trans
         transaction={selectedTransaction}
         accounts={accounts}
         categories={categories}
+        onSuccess={handleSuccess}
+      />
+      <ImportCsvModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
         onSuccess={handleSuccess}
       />
     </div>

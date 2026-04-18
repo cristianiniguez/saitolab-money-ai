@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { deleteAccount } from './actions'
@@ -21,13 +22,17 @@ const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> 
   wallet: { className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: 'Wallet' }
 }
 
+const fmt = (n: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+
 interface AccountCardProps {
   account: Account
+  balance: number
   onEdit: () => void
   onSuccess: () => void
 }
 
-export function AccountCard({ account, onEdit, onSuccess }: AccountCardProps) {
+export function AccountCard({ account, balance, onEdit, onSuccess }: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const badge = TYPE_BADGE[account.type]
@@ -44,7 +49,14 @@ export function AccountCard({ account, onEdit, onSuccess }: AccountCardProps) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>{account.name}</CardTitle>
+          <CardTitle>
+            <Link
+              href={`/dashboard/accounts/${account.slug}`}
+              className="hover:underline"
+            >
+              {account.name}
+            </Link>
+          </CardTitle>
           <CardAction>
             <div className="flex gap-1.5">
               <Button variant="outline" size="icon-sm" onClick={onEdit} aria-label="Edit account">
@@ -62,9 +74,12 @@ export function AccountCard({ account, onEdit, onSuccess }: AccountCardProps) {
             </div>
           </CardAction>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center justify-between">
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
             {badge.label}
+          </span>
+          <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+            {fmt(balance)}
           </span>
         </CardContent>
       </Card>

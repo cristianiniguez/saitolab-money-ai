@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Category } from '@/lib/schemas/categories'
 import { deleteCategory } from './actions'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -15,13 +16,17 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 
+const fmt = (n: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+
 interface CategoryCardProps {
   category: Category
+  balance: number
   onEdit: () => void
   onSuccess: () => void
 }
 
-export function CategoryCard({ category, onEdit, onSuccess }: CategoryCardProps) {
+export function CategoryCard({ category, balance, onEdit, onSuccess }: CategoryCardProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -37,7 +42,11 @@ export function CategoryCard({ category, onEdit, onSuccess }: CategoryCardProps)
     <>
       <Card>
         <CardHeader>
-          <CardTitle>{category.name}</CardTitle>
+          <CardTitle>
+            <Link href={`/dashboard/categories/${category.slug}`} className="hover:underline">
+              {category.name}
+            </Link>
+          </CardTitle>
           <CardAction>
             <div className="flex gap-1.5">
               <Button variant="outline" size="icon-sm" onClick={onEdit} aria-label="Edit category">
@@ -55,6 +64,11 @@ export function CategoryCard({ category, onEdit, onSuccess }: CategoryCardProps)
             </div>
           </CardAction>
         </CardHeader>
+        <CardContent>
+          <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+            {fmt(balance)}
+          </span>
+        </CardContent>
       </Card>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>

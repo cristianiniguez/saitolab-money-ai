@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface CategoriesClientProps {
   categories: Category[]
+  balances: Record<string, number>
 }
 
 function CategoryCardSkeleton() {
@@ -24,11 +25,14 @@ function CategoryCardSkeleton() {
           <Skeleton className="size-6 rounded-md" />
         </div>
       </div>
+      <div className="px-4">
+        <Skeleton className="h-4 w-20" />
+      </div>
     </div>
   )
 }
 
-export function CategoriesClient({ categories }: CategoriesClientProps) {
+export function CategoriesClient({ categories, balances }: CategoriesClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -101,6 +105,7 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
                   <CategoryCard
                     key={category.id}
                     category={category}
+                    balance={balances[category.id] ?? 0}
                     onEdit={() => openEdit(category)}
                     onSuccess={handleSuccess}
                   />

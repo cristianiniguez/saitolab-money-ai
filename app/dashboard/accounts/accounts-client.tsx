@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface AccountsClientProps {
   accounts: Account[]
+  balances: Record<string, number>
 }
 
 function AccountCardSkeleton() {
@@ -24,14 +25,15 @@ function AccountCardSkeleton() {
           <Skeleton className="size-6 rounded-md" />
         </div>
       </div>
-      <div className="px-4">
+      <div className="px-4 flex items-center justify-between">
         <Skeleton className="h-5 w-14 rounded-full" />
+        <Skeleton className="h-4 w-20" />
       </div>
     </div>
   )
 }
 
-export function AccountsClient({ accounts }: AccountsClientProps) {
+export function AccountsClient({ accounts, balances }: AccountsClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -104,6 +106,7 @@ export function AccountsClient({ accounts }: AccountsClientProps) {
                   <AccountCard
                     key={account.id}
                     account={account}
+                    balance={balances[account.id] ?? 0}
                     onEdit={() => openEdit(account)}
                     onSuccess={handleSuccess}
                   />

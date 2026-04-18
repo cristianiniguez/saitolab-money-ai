@@ -19,7 +19,10 @@ const eslintConfig = defineConfig([
     rules: {
       '@stylistic/arrow-parens': ['warn', 'as-needed'],
       '@stylistic/brace-style': 'off',
-      '@stylistic/jsx-one-expression-per-line': 'off'
+      '@stylistic/jsx-one-expression-per-line': 'off',
+
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/incompatible-library': 'off'
     }
   },
   // Override default ignores of eslint-config-next.

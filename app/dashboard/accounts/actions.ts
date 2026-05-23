@@ -7,6 +7,16 @@ import { slugify } from '@/lib/utils/slugify'
 
 type ActionResult = { success: boolean, error?: string }
 
+function currencyTypeError(accountType: string, currencyType: string): string | null {
+  if ((accountType === 'bank' || accountType === 'wallet') && currencyType === 'crypto') {
+    return 'Bank and wallet accounts must use a fiat currency'
+  }
+  if (accountType === 'crypto' && currencyType === 'fiat') {
+    return 'Crypto accounts must use a crypto currency'
+  }
+  return null
+}
+
 export async function createAccount(values: AccountValues): Promise<ActionResult> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Unauthorized', success: false }
@@ -16,6 +26,15 @@ export async function createAccount(values: AccountValues): Promise<ActionResult
 
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
+
+  const { data: currency } = await insforge.database
+    .from('currencies')
+    .select('type')
+    .eq('id', parsed.data.currency_id)
+    .single()
+  const typeError = currency ? currencyTypeError(parsed.data.type, currency.type) : null
+  if (typeError) return { error: typeError, success: false }
+
   const { error } = await insforge.database.from('accounts').insert({
     currency_id: parsed.data.currency_id,
     name: parsed.data.name,
@@ -39,6 +58,15 @@ export async function updateAccount(id: string, values: AccountValues): Promise<
 
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
+
+  const { data: currency } = await insforge.database
+    .from('currencies')
+    .select('type')
+    .eq('id', parsed.data.currency_id)
+    .single()
+  const typeError = currency ? currencyTypeError(parsed.data.type, currency.type) : null
+  if (typeError) return { error: typeError, success: false }
+
   const { error } = await insforge.database
     .from('accounts')
     .update({ currency_id: parsed.data.currency_id, name: parsed.data.name, slug: parsed.data.slug, type: parsed.data.type })
@@ -63,12 +91,13 @@ export async function importAccounts(
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  // Resolve currency slugs to IDs; fetch all currencies once
+  // Resolve currency slugs to IDs and types; fetch all currencies once
   const { data: currencies } = await insforge.database
     .from('currencies')
-    .select('id, slug')
-  const currencyBySlug = Object.fromEntries((currencies ?? []).map((c: { id: string, slug: string }) => [c.slug, c.id]))
-  const usdId = currencyBySlug['usd'] ?? null
+    .select('id, slug, type')
+  const currencyBySlug = Object.fromEntries((currencies ?? []).map((c: { id: string, slug: string, type: string }) => [c.slug, { id: c.id, type: c.type }]))
+  const usdEntry = currencyBySlug['usd'] ?? null
+  const usdId = usdEntry?.id ?? null
 
   const toInsert: AccountValues[] = []
   const errors: ImportRowError[] = []
@@ -77,11 +106,19 @@ export async function importAccounts(
     const raw = rows[i]
     const slug = raw.slug?.trim() || slugify(raw.name?.trim() ?? '')
     const currencySlug = raw.currency_slug?.trim().toLowerCase()
-    const currency_id = (currencySlug ? currencyBySlug[currencySlug] : usdId) ?? usdId ?? ''
+    const currencyEntry = (currencySlug ? currencyBySlug[currencySlug] : usdEntry) ?? usdEntry
+    const currency_id = currencyEntry?.id ?? usdId ?? ''
     const parsed = accountSchema.safeParse({ currency_id, name: raw.name?.trim(), slug, type: raw.type?.trim() })
     if (!parsed.success) {
       errors.push({ message: parsed.error.errors[0]?.message ?? 'Invalid row', row: i + 2 })
       continue
+    }
+    if (currencyEntry) {
+      const typeError = currencyTypeError(parsed.data.type, currencyEntry.type)
+      if (typeError) {
+        errors.push({ message: typeError, row: i + 2 })
+        continue
+      }
     }
     toInsert.push(parsed.data)
   }

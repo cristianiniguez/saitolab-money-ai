@@ -22,7 +22,7 @@ export default async function AccountsPage() {
       .eq('user_id', user.id),
     insforge.database
       .from('currencies')
-      .select('id, name, symbol, slug')
+      .select('id, name, symbol, slug, type')
       .order('name'),
     insforge.database
       .from('user_settings')
@@ -31,7 +31,7 @@ export default async function AccountsPage() {
       .limit(1)
   ])
 
-  type UserSettingsRow = { main_currency_id: string; currencies: { symbol: string; slug: string; rate_usd: number } | null }
+  type UserSettingsRow = { main_currency_id: string, currencies: { symbol: string, slug: string, rate_usd: number } | null }
   const settingsRow = (userSettings as UserSettingsRow[] | null)?.[0] ?? null
   const mainCurrencyId = settingsRow?.main_currency_id ?? null
   const mainCurrency = settingsRow?.currencies ?? null

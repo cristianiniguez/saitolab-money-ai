@@ -52,10 +52,26 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
   })
 
   const nameValue = form.watch('name')
+  const accountType = form.watch('type')
+
+  const fiatCurrencies = currencies.filter(c => c.type === 'fiat')
+  const cryptoCurrencies = currencies.filter(c => c.type === 'crypto')
+  const filteredCurrencies = accountType === 'crypto' ? cryptoCurrencies : fiatCurrencies
 
   useEffect(() => {
     form.setValue('slug', slugify(nameValue))
   }, [nameValue, form])
+
+  useEffect(() => {
+    const current = form.getValues('currency_id')
+    const isValid = filteredCurrencies.some(c => c.id === current)
+    if (!isValid) {
+      const fallback = accountType === 'crypto'
+        ? (cryptoCurrencies[0]?.id ?? '')
+        : (currencies.find(c => c.slug === 'usd' && c.type === 'fiat')?.id ?? fiatCurrencies[0]?.id ?? '')
+      form.setValue('currency_id', fallback)
+    }
+  }, [accountType])
 
   useEffect(() => {
     if (open) {
@@ -175,7 +191,7 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {currencies.map(c => (
+                    {filteredCurrencies.map(c => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.symbol} — {c.name}
                       </SelectItem>

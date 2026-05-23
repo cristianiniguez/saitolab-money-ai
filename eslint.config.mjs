@@ -21,8 +21,10 @@ const eslintConfig = defineConfig([
       '@stylistic/brace-style': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
 
+      'react-hooks/incompatible-library': 'off',
       'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/incompatible-library': 'off'
+
+      'sort-keys': 'warn'
     }
   },
   // Override default ignores of eslint-config-next.

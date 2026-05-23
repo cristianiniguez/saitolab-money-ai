@@ -19,7 +19,7 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
 
   const { data: account } = await insforge.database
     .from('accounts')
-    .select('*')
+    .select('*, currencies(id, name, symbol)')
     .eq('slug', slug)
     .eq('user_id', user.id)
     .single()

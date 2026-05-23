@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { PlusIcon, UploadIcon, WalletIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
+import { type Currency } from '@/lib/schemas/currencies'
 import { AccountCard } from './account-card'
 import { AccountModal } from './account-modal'
 import { ImportCsvModal } from './import-csv-modal'
@@ -13,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 interface AccountsClientProps {
   accounts: Account[]
   balances: Record<string, number>
+  currencies: Currency[]
 }
 
 function AccountCardSkeleton() {
@@ -33,7 +35,7 @@ function AccountCardSkeleton() {
   )
 }
 
-export function AccountsClient({ accounts, balances }: AccountsClientProps) {
+export function AccountsClient({ accounts, balances, currencies }: AccountsClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -119,6 +121,7 @@ export function AccountsClient({ accounts, balances }: AccountsClientProps) {
         onOpenChange={setModalOpen}
         account={selectedAccount}
         onSuccess={handleSuccess}
+        currencies={currencies}
       />
       <ImportCsvModal
         open={importModalOpen}

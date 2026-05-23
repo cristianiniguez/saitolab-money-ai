@@ -16,12 +16,18 @@ const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> 
 }
 
 const TIMELINE_DOT: Record<Transaction['type'], string> = {
-  income: 'bg-green-500',
-  expense: 'bg-red-500'
+  expense: 'bg-red-500',
+  income: 'bg-green-500'
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+const fmt = (n: number, currencySymbol = 'USD') => {
+  try {
+    return new Intl.NumberFormat('en-US', { currency: currencySymbol, style: 'currency' }).format(n)
+  }
+  catch {
+    return `${currencySymbol} ${n.toFixed(2)}`
+  }
+}
 
 interface AccountDetailClientProps {
   account: Account
@@ -49,6 +55,11 @@ export function AccountDetailClient({ account, balance, transactions }: AccountD
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
           {badge.label}
         </span>
+        {account.currencies && (
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+            {account.currencies.symbol}
+          </span>
+        )}
       </div>
 
       {/* Balance card */}
@@ -58,7 +69,7 @@ export function AccountDetailClient({ account, balance, transactions }: AccountD
         </CardHeader>
         <CardContent>
           <div className={`text-3xl font-bold ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {fmt(balance)}
+            {fmt(balance, account.currencies?.symbol)}
           </div>
         </CardContent>
       </Card>
@@ -122,8 +133,8 @@ export function AccountDetailClient({ account, balance, transactions }: AccountD
                   <div className="flex flex-col">
                     {transactions.map((transaction, index) => {
                       const formattedDate = new Date(transaction.date + 'T00:00:00').toLocaleDateString('en-US', {
-                        month: 'short',
                         day: 'numeric',
+                        month: 'short',
                         year: 'numeric'
                       })
                       const isLast = index === transactions.length - 1
@@ -146,7 +157,7 @@ export function AccountDetailClient({ account, balance, transactions }: AccountD
                               </span>
                             </div>
                             <span className={`text-sm font-semibold tabular-nums shrink-0 ${transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              {transaction.type === 'income' ? '+' : '-'}{fmt(transaction.amount)}
+                              {transaction.type === 'income' ? '+' : '-'}{fmt(transaction.amount, account.currencies?.symbol)}
                             </span>
                           </div>
                         </div>

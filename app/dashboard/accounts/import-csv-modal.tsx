@@ -15,12 +15,12 @@ import {
 } from '@/components/ui/dialog'
 
 const REQUIRED_HEADERS = ['name', 'type']
-const ALL_HEADERS = ['name', 'type', 'slug']
+const ALL_HEADERS = ['name', 'type', 'slug', 'currency_slug']
 const TEMPLATE_ROWS = [
-  'name,type,slug',
-  'Checking Account,bank,checking-account',
-  'My Wallet,wallet,',
-  'Crypto Wallet,crypto,crypto-wallet'
+  'name,type,slug,currency_slug',
+  'Checking Account,bank,checking-account,usd',
+  'My Wallet,wallet,,usd',
+  'Crypto Wallet,crypto,crypto-wallet,btc'
 ]
 
 interface ImportCsvModalProps {
@@ -107,7 +107,7 @@ export function ImportCsvModal({ open, onOpenChange, onSuccess }: ImportCsvModal
           <div className="space-y-4 mt-2">
             <p className="text-sm text-muted-foreground">
               Upload a CSV file with columns: <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{ALL_HEADERS.join(', ')}</code>.
-              The <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">slug</code> column is optional — it will be auto-generated from the name if blank.
+              The <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">slug</code> and <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">currency_slug</code> columns are optional — slug is auto-generated from name if blank, currency defaults to USD.
             </p>
             <button
               type="button"

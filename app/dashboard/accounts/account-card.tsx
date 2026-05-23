@@ -22,8 +22,14 @@ const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> 
   wallet: { className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: 'Wallet' }
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+const fmt = (n: number, currencySymbol = 'USD') => {
+  try {
+    return new Intl.NumberFormat('en-US', { currency: currencySymbol, style: 'currency' }).format(n)
+  }
+  catch {
+    return `${currencySymbol} ${n.toFixed(2)}`
+  }
+}
 
 interface AccountCardProps {
   account: Account
@@ -79,7 +85,7 @@ export function AccountCard({ account, balance, onEdit, onSuccess }: AccountCard
             {badge.label}
           </span>
           <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {fmt(balance)}
+            {fmt(balance, account.currencies?.symbol)}
           </span>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { accountSchema, ACCOUNT_TYPES, type Account, type AccountValues } from '@/lib/schemas/accounts'
+import { type Currency } from '@/lib/schemas/currencies'
 import { slugify } from '@/lib/utils/slugify'
 import { createAccount, updateAccount } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -30,6 +31,7 @@ interface AccountModalProps {
   onOpenChange: (open: boolean) => void
   account?: Account | null
   onSuccess: () => void
+  currencies: Currency[]
 }
 
 const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
@@ -38,12 +40,13 @@ const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
   wallet: 'Wallet'
 }
 
-export function AccountModal({ open, onOpenChange, account, onSuccess }: AccountModalProps) {
+export function AccountModal({ open, onOpenChange, account, onSuccess, currencies }: AccountModalProps) {
+  const defaultCurrencyId = currencies.find(c => c.slug === 'usd')?.id ?? currencies[0]?.id ?? ''
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<AccountValues>({
-    defaultValues: { name: '', type: 'bank', slug: '' },
+    defaultValues: { currency_id: defaultCurrencyId, name: '', slug: '', type: 'bank' },
     resolver: zodResolver(accountSchema)
   })
 
@@ -55,7 +58,10 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
 
   useEffect(() => {
     if (open) {
-      form.reset(account ? { name: account.name, type: account.type, slug: account.slug } : { name: '', type: 'bank', slug: '' })
+      form.reset(account
+        ? { currency_id: account.currency_id ?? defaultCurrencyId, name: account.name, slug: account.slug, type: account.type }
+        : { currency_id: defaultCurrencyId, name: '', slug: '', type: 'bank' }
+      )
       setServerError(null)
     }
   }, [open, account, form])
@@ -148,6 +154,29 @@ export function AccountModal({ open, onOpenChange, account, onSuccess }: Account
                     {ACCOUNT_TYPES.map(type => (
                       <SelectItem key={type} value={type}>
                         {ACCOUNT_TYPE_LABELS[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="currency_id"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Currency</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="currency_id" className="w-full" aria-invalid={fieldState.invalid}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.symbol} — {c.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

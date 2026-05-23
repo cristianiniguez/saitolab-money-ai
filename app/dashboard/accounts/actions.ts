@@ -91,13 +91,22 @@ export async function importAccounts(
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  // Resolve currency slugs to IDs and types; fetch all currencies once
-  const { data: currencies } = await insforge.database
-    .from('currencies')
-    .select('id, slug, type')
+  // Resolve currency slugs to IDs and types; fetch all currencies and user settings once
+  const [{ data: currencies }, { data: userSettings }] = await Promise.all([
+    insforge.database.from('currencies').select('id, slug, type'),
+    insforge.database.from('user_settings').select('main_currency_id, currencies(id, type)').eq('user_id', user.id).limit(1)
+  ])
   const currencyBySlug = Object.fromEntries((currencies ?? []).map((c: { id: string, slug: string, type: string }) => [c.slug, { id: c.id, type: c.type }]))
-  const usdEntry = currencyBySlug['usd'] ?? null
-  const usdId = usdEntry?.id ?? null
+
+  type SettingsRow = { main_currency_id: string, currencies: { id: string, type: string } | null }
+  const mainCurrencyEntry = (userSettings as SettingsRow[] | null)?.[0]?.currencies ?? null
+
+  const fiatDefault = (mainCurrencyEntry?.type === 'fiat' ? mainCurrencyEntry : null)
+    ?? currencyBySlug['usd']
+    ?? null
+  const cryptoDefault = (mainCurrencyEntry?.type === 'crypto' ? mainCurrencyEntry : null)
+    ?? currencyBySlug['usdt']
+    ?? null
 
   const toInsert: AccountValues[] = []
   const errors: ImportRowError[] = []
@@ -106,8 +115,10 @@ export async function importAccounts(
     const raw = rows[i]
     const slug = raw.slug?.trim() || slugify(raw.name?.trim() ?? '')
     const currencySlug = raw.currency_slug?.trim().toLowerCase()
-    const currencyEntry = (currencySlug ? currencyBySlug[currencySlug] : usdEntry) ?? usdEntry
-    const currency_id = currencyEntry?.id ?? usdId ?? ''
+    const accountType = raw.type?.trim()
+    const typeDefault = accountType === 'crypto' ? cryptoDefault : fiatDefault
+    const currencyEntry = (currencySlug ? currencyBySlug[currencySlug] : typeDefault) ?? typeDefault
+    const currency_id = currencyEntry?.id ?? ''
     const parsed = accountSchema.safeParse({ currency_id, name: raw.name?.trim(), slug, type: raw.type?.trim() })
     if (!parsed.success) {
       errors.push({ message: parsed.error.errors[0]?.message ?? 'Invalid row', row: i + 2 })

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Transaction } from '@/lib/schemas/transactions'
+import { toast } from 'sonner'
 import { deleteTransaction } from './actions'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,8 +22,8 @@ interface TransactionRowProps {
 }
 
 const TYPE_BADGE = {
-  income: { label: 'Income', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  expense: { label: 'Expense', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }
+  expense: { className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', label: 'Expense' },
+  income: { className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: 'Income' }
 }
 
 export function TransactionRow({ transaction, onEdit, onSuccess }: TransactionRowProps) {
@@ -31,20 +32,21 @@ export function TransactionRow({ transaction, onEdit, onSuccess }: TransactionRo
   const badge = TYPE_BADGE[transaction.type]
 
   const formattedDate = new Date(transaction.date + 'T00:00:00').toLocaleDateString('en-US', {
-    month: 'short',
     day: 'numeric',
+    month: 'short',
     year: 'numeric'
   })
 
   const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
+    style: 'currency'
   }).format(transaction.amount)
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false)
     startTransition(async () => {
       await deleteTransaction(transaction.id)
+      toast.success('Transaction deleted')
       onSuccess()
     })
   }

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { accountSchema, ACCOUNT_TYPES, type Account, type AccountValues } from '@/lib/schemas/accounts'
 import { type Currency } from '@/lib/schemas/currencies'
 import { slugify } from '@/lib/utils/slugify'
+import { toast } from 'sonner'
 import { createAccount, updateAccount } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -90,6 +91,7 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
         ? await updateAccount(account.id, data)
         : await createAccount(data)
       if (res.success) {
+        toast.success(account ? 'Account updated' : 'Account created')
         onOpenChange(false)
         onSuccess()
       }

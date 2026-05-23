@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { userSettingsSchema, type UserSettings, type UserSettingsValues } from '@/lib/schemas/settings'
 import { type Currency } from '@/lib/schemas/currencies'
+import { toast } from 'sonner'
 import { upsertUserSettings } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -26,7 +27,6 @@ export function SettingsClient({ settings, currencies }: SettingsClientProps) {
   const fallbackCurrencyId = currencies.find(c => c.slug === 'usd')?.id ?? currencies[0]?.id ?? ''
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
 
   const form = useForm<UserSettingsValues>({
     defaultValues: { main_currency_id: settings?.main_currency_id ?? fallbackCurrencyId },
@@ -35,10 +35,9 @@ export function SettingsClient({ settings, currencies }: SettingsClientProps) {
 
   const onSubmit = (data: UserSettingsValues) => {
     setServerError(null)
-    setSaved(false)
     startTransition(async () => {
       const res = await upsertUserSettings(data)
-      if (res.success) setSaved(true)
+      if (res.success) toast.success('Settings saved')
       else setServerError(res.error ?? 'Something went wrong')
     })
   }
@@ -54,11 +53,6 @@ export function SettingsClient({ settings, currencies }: SettingsClientProps) {
         {serverError && (
           <Alert variant="destructive">
             <AlertDescription>{serverError}</AlertDescription>
-          </Alert>
-        )}
-        {saved && (
-          <Alert>
-            <AlertDescription>Settings saved.</AlertDescription>
           </Alert>
         )}
 

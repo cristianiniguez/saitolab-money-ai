@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Category } from '@/lib/schemas/categories'
+import { toast } from 'sonner'
 import { deleteCategory } from './actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/dialog'
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+  new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' }).format(n)
 
 interface CategoryCardProps {
   category: Category
@@ -34,6 +35,7 @@ export function CategoryCard({ category, balance, onEdit, onSuccess }: CategoryC
     setConfirmOpen(false)
     startTransition(async () => {
       await deleteCategory(category.id)
+      toast.success('Category deleted')
       onSuccess()
     })
   }

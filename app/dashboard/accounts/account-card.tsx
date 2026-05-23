@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { convertCurrency } from '@/lib/utils/currency'
+import { toast } from 'sonner'
 import { deleteAccount } from './actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,7 +38,7 @@ interface AccountCardProps {
   balance: number
   onEdit: () => void
   onSuccess: () => void
-  mainCurrency?: { symbol: string; slug: string; rate_usd: number } | null
+  mainCurrency?: { symbol: string, slug: string, rate_usd: number } | null
 }
 
 export function AccountCard({ account, balance, onEdit, onSuccess, mainCurrency }: AccountCardProps) {
@@ -46,15 +47,15 @@ export function AccountCard({ account, balance, onEdit, onSuccess, mainCurrency 
   const badge = TYPE_BADGE[account.type]
 
   const accountRateUsd = account.currencies?.rate_usd ?? 1
-  const showConverted =
-    mainCurrency != null &&
-    account.currencies != null &&
-    mainCurrency.slug !== account.currencies.symbol.toLowerCase()
+  const showConverted = mainCurrency != null
+    && account.currencies != null
+    && mainCurrency.slug !== account.currencies.symbol.toLowerCase()
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false)
     startTransition(async () => {
       await deleteAccount(account.id)
+      toast.success('Account deleted')
       onSuccess()
     })
   }

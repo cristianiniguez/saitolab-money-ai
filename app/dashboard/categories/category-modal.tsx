@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { categorySchema, type Category, type CategoryValues } from '@/lib/schemas/categories'
 import { slugify } from '@/lib/utils/slugify'
+import { toast } from 'sonner'
 import { createCategory, updateCategory } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,7 @@ export function CategoryModal({ open, onOpenChange, category, onSuccess }: Categ
         ? await updateCategory(category.id, data)
         : await createCategory(data)
       if (res.success) {
+        toast.success(category ? 'Category updated' : 'Category created')
         onOpenChange(false)
         onSuccess()
       }

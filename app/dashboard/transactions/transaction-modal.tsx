@@ -14,6 +14,7 @@ import {
 } from '@/lib/schemas/transactions'
 import { type Account } from '@/lib/schemas/accounts'
 import { type Category } from '@/lib/schemas/categories'
+import { toast } from 'sonner'
 import { createTransaction, updateTransaction } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -49,8 +50,8 @@ interface TransactionModalProps {
 }
 
 const TRANSACTION_TYPE_LABELS: Record<typeof TRANSACTION_TYPES[number], string> = {
-  income: 'Income',
-  expense: 'Expense'
+  expense: 'Expense',
+  income: 'Income'
 }
 
 const NONE_CATEGORY_VALUE = '__none__'
@@ -68,12 +69,12 @@ export function TransactionModal({
 
   const form = useForm<TransactionValues>({
     defaultValues: {
-      name: '',
-      date: '',
-      amount: undefined,
-      type: 'expense',
       account_id: '',
-      category_id: undefined
+      amount: undefined,
+      category_id: undefined,
+      date: '',
+      name: '',
+      type: 'expense'
     },
     resolver: zodResolver(transactionSchema)
   })
@@ -83,20 +84,20 @@ export function TransactionModal({
       form.reset(
         transaction
           ? {
-              name: transaction.name,
-              date: transaction.date,
-              amount: transaction.amount,
-              type: transaction.type,
               account_id: transaction.account_id,
-              category_id: transaction.category_id ?? undefined
+              amount: transaction.amount,
+              category_id: transaction.category_id ?? undefined,
+              date: transaction.date,
+              name: transaction.name,
+              type: transaction.type
             }
           : {
-              name: '',
-              date: '',
-              amount: undefined,
-              type: 'expense',
               account_id: '',
-              category_id: undefined
+              amount: undefined,
+              category_id: undefined,
+              date: '',
+              name: '',
+              type: 'expense'
             }
       )
       setServerError(null)
@@ -110,6 +111,7 @@ export function TransactionModal({
         ? await updateTransaction(transaction.id, data)
         : await createTransaction(data)
       if (res.success) {
+        toast.success(transaction ? 'Transaction updated' : 'Transaction created')
         onOpenChange(false)
         onSuccess()
       }

@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { UploadIcon, FileIcon, AlertCircleIcon, CheckCircle2Icon } from 'lucide-react'
 import { parseCsv } from '@/lib/utils/parse-csv'
+import { toast } from 'sonner'
 import { importCategories } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -85,11 +86,12 @@ export function ImportCsvModal({ open, onOpenChange, onSuccess }: ImportCsvModal
     startTransition(async () => {
       const result = await importCategories(rows)
       setImportResult({
-        imported: result.imported,
         errors: result.errors,
+        imported: result.imported,
         serverError: result.error
       })
       if (result.success && result.imported > 0) {
+        toast.success(`${result.imported} categor${result.imported !== 1 ? 'ies' : 'y'} imported`)
         setStep('done')
         onSuccess()
       }

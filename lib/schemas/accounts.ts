@@ -16,5 +16,5 @@ export interface Account extends AccountValues {
   id: string
   user_id: string
   created_at: string
-  currencies?: { id: string, name: string, symbol: string } | null
+  currencies?: { id: string, name: string, symbol: string, rate_usd: number } | null
 }

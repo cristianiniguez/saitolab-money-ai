@@ -5,9 +5,6 @@ import { BalanceChart, type AccountChartSlice } from './components/balance-chart
 
 const CHART_COLORS = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'] as const
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
-
 export default async function DashboardPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/sign-in')
@@ -15,7 +12,7 @@ export default async function DashboardPage() {
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  const [{ data: transactions }, { data: accounts }] = await Promise.all([
+  const [{ data: transactions }, { data: accounts }, { data: userSettings }] = await Promise.all([
     insforge.database
       .from('transactions')
       .select('amount, type, account_id')
@@ -23,8 +20,19 @@ export default async function DashboardPage() {
     insforge.database
       .from('accounts')
       .select('id, name')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('user_settings')
+      .select('currencies(symbol, slug, type)')
       .eq('user_id', user.id)
+      .limit(1)
   ])
+
+  const currencyRow = (userSettings as { currencies: { symbol: string; slug: string; type: string } | null }[] | null)?.[0]?.currencies
+  const currencyCode = currencyRow?.type === 'fiat' ? currencyRow.slug.toUpperCase() : 'USD'
+
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(n)
 
   const txList = (transactions ?? []) as { amount: number, type: string, account_id: string }[]
   const acctList = (accounts ?? []) as { id: string, name: string }[]

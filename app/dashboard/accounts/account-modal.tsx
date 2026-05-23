@@ -32,6 +32,7 @@ interface AccountModalProps {
   account?: Account | null
   onSuccess: () => void
   currencies: Currency[]
+  mainCurrencyId?: string | null
 }
 
 const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
@@ -40,8 +41,8 @@ const ACCOUNT_TYPE_LABELS: Record<typeof ACCOUNT_TYPES[number], string> = {
   wallet: 'Wallet'
 }
 
-export function AccountModal({ open, onOpenChange, account, onSuccess, currencies }: AccountModalProps) {
-  const defaultCurrencyId = currencies.find(c => c.slug === 'usd')?.id ?? currencies[0]?.id ?? ''
+export function AccountModal({ open, onOpenChange, account, onSuccess, currencies, mainCurrencyId }: AccountModalProps) {
+  const defaultCurrencyId = mainCurrencyId ?? currencies.find(c => c.slug === 'usd')?.id ?? currencies[0]?.id ?? ''
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
 

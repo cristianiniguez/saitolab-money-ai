@@ -19,14 +19,14 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
 
   const { data: account } = await insforge.database
     .from('accounts')
-    .select('*, currencies(id, name, symbol)')
+    .select('*, currencies(id, name, symbol, rate_usd)')
     .eq('slug', slug)
     .eq('user_id', user.id)
     .single()
 
   if (!account) notFound()
 
-  const [{ data: allTransactions }, { data: recentTransactions }] = await Promise.all([
+  const [{ data: allTransactions }, { data: recentTransactions }, { data: userSettings }] = await Promise.all([
     insforge.database
       .from('transactions')
       .select('amount, type')
@@ -38,8 +38,16 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
       .eq('account_id', (account as Account).id)
       .eq('user_id', user.id)
       .order('date', { ascending: false })
-      .limit(10)
+      .limit(10),
+    insforge.database
+      .from('user_settings')
+      .select('currencies(symbol, slug, rate_usd)')
+      .eq('user_id', user.id)
+      .limit(1)
   ])
+
+  type MainCurrencyRow = { currencies: { symbol: string; slug: string; rate_usd: number } | null }
+  const mainCurrency = (userSettings as MainCurrencyRow[] | null)?.[0]?.currencies ?? null
 
   const txList = (allTransactions ?? []) as { amount: number, type: string }[]
   const balance = txList.reduce((sum, tx) => {
@@ -53,6 +61,7 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
           account={account as Account}
           balance={balance}
           transactions={(recentTransactions as Transaction[]) ?? []}
+          mainCurrency={mainCurrency}
         />
       </main>
     </div>

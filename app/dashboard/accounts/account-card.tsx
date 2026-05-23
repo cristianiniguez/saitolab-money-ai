@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
+import { convertCurrency } from '@/lib/utils/currency'
 import { deleteAccount } from './actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,12 +37,19 @@ interface AccountCardProps {
   balance: number
   onEdit: () => void
   onSuccess: () => void
+  mainCurrency?: { symbol: string; slug: string; rate_usd: number } | null
 }
 
-export function AccountCard({ account, balance, onEdit, onSuccess }: AccountCardProps) {
+export function AccountCard({ account, balance, onEdit, onSuccess, mainCurrency }: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const badge = TYPE_BADGE[account.type]
+
+  const accountRateUsd = account.currencies?.rate_usd ?? 1
+  const showConverted =
+    mainCurrency != null &&
+    account.currencies != null &&
+    mainCurrency.slug !== account.currencies.symbol.toLowerCase()
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false)
@@ -84,9 +92,16 @@ export function AccountCard({ account, balance, onEdit, onSuccess }: AccountCard
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
             {badge.label}
           </span>
-          <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {fmt(balance, account.currencies?.symbol)}
-          </span>
+          <div className="flex flex-col items-end gap-0.5">
+            <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+              {fmt(balance, account.currencies?.symbol)}
+            </span>
+            {showConverted && (
+              <span className="text-xs text-muted-foreground tabular-nums">
+                ≈ {fmt(convertCurrency(balance, accountRateUsd, mainCurrency!.rate_usd), mainCurrency!.symbol)}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
 

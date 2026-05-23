@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ReceiptIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { type Transaction } from '@/lib/schemas/transactions'
+import { convertCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TransactionRow } from '@/app/dashboard/transactions/transaction-row'
@@ -33,13 +34,19 @@ interface AccountDetailClientProps {
   account: Account
   balance: number
   transactions: Transaction[]
+  mainCurrency?: { symbol: string; slug: string; rate_usd: number } | null
 }
 
-export function AccountDetailClient({ account, balance, transactions }: AccountDetailClientProps) {
+export function AccountDetailClient({ account, balance, transactions, mainCurrency }: AccountDetailClientProps) {
   const router = useRouter()
   const [, startRefreshTransition] = useTransition()
 
   const badge = TYPE_BADGE[account.type]
+  const accountRateUsd = account.currencies?.rate_usd ?? 1
+  const showConverted =
+    mainCurrency != null &&
+    account.currencies != null &&
+    mainCurrency.slug !== account.currencies.symbol.toLowerCase()
 
   const handleSuccess = () => {
     startRefreshTransition(() => {
@@ -71,6 +78,11 @@ export function AccountDetailClient({ account, balance, transactions }: AccountD
           <div className={`text-3xl font-bold ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
             {fmt(balance, account.currencies?.symbol)}
           </div>
+          {showConverted && (
+            <div className="text-sm text-muted-foreground mt-1 tabular-nums">
+              ≈ {fmt(convertCurrency(balance, accountRateUsd, mainCurrency!.rate_usd), mainCurrency!.symbol)}
+            </div>
+          )}
         </CardContent>
       </Card>
 

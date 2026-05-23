@@ -11,10 +11,18 @@ import { ImportCsvModal } from './import-csv-modal'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
+interface MainCurrency {
+  symbol: string
+  slug: string
+  rate_usd: number
+}
+
 interface AccountsClientProps {
   accounts: Account[]
   balances: Record<string, number>
   currencies: Currency[]
+  mainCurrencyId?: string | null
+  mainCurrency?: MainCurrency | null
 }
 
 function AccountCardSkeleton() {
@@ -35,7 +43,7 @@ function AccountCardSkeleton() {
   )
 }
 
-export function AccountsClient({ accounts, balances, currencies }: AccountsClientProps) {
+export function AccountsClient({ accounts, balances, currencies, mainCurrencyId, mainCurrency }: AccountsClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -111,6 +119,7 @@ export function AccountsClient({ accounts, balances, currencies }: AccountsClien
                     balance={balances[account.id] ?? 0}
                     onEdit={() => openEdit(account)}
                     onSuccess={handleSuccess}
+                    mainCurrency={mainCurrency}
                   />
                 ))}
               </div>
@@ -122,6 +131,7 @@ export function AccountsClient({ accounts, balances, currencies }: AccountsClien
         account={selectedAccount}
         onSuccess={handleSuccess}
         currencies={currencies}
+        mainCurrencyId={mainCurrencyId}
       />
       <ImportCsvModal
         open={importModalOpen}

@@ -11,10 +11,10 @@ export default async function AccountsPage() {
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  const [{ data: accounts }, { data: transactions }, { data: currencies }] = await Promise.all([
+  const [{ data: accounts }, { data: transactions }, { data: currencies }, { data: userSettings }] = await Promise.all([
     insforge.database
       .from('accounts')
-      .select('*, currencies(id, name, symbol)')
+      .select('*, currencies(id, name, symbol, rate_usd)')
       .eq('user_id', user.id),
     insforge.database
       .from('transactions')
@@ -23,8 +23,18 @@ export default async function AccountsPage() {
     insforge.database
       .from('currencies')
       .select('id, name, symbol, slug')
-      .order('name')
+      .order('name'),
+    insforge.database
+      .from('user_settings')
+      .select('main_currency_id, currencies(symbol, slug, rate_usd)')
+      .eq('user_id', user.id)
+      .limit(1)
   ])
+
+  type UserSettingsRow = { main_currency_id: string; currencies: { symbol: string; slug: string; rate_usd: number } | null }
+  const settingsRow = (userSettings as UserSettingsRow[] | null)?.[0] ?? null
+  const mainCurrencyId = settingsRow?.main_currency_id ?? null
+  const mainCurrency = settingsRow?.currencies ?? null
 
   const txList = (transactions ?? []) as { amount: number, type: string, account_id: string }[]
   const balances: Record<string, number> = {}
@@ -39,6 +49,8 @@ export default async function AccountsPage() {
           accounts={(accounts as Account[]) ?? []}
           balances={balances}
           currencies={(currencies as Currency[]) ?? []}
+          mainCurrencyId={mainCurrencyId}
+          mainCurrency={mainCurrency}
         />
       </main>
     </div>

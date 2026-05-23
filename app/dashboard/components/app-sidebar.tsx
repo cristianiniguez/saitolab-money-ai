@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowLeftRight, LayoutDashboard, Tags, Wallet } from 'lucide-react'
+import { ArrowLeftRight, LayoutDashboard, Settings, Tags, Wallet } from 'lucide-react'
 import { signOutAction } from '@/app/(main)/auth/actions'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,7 +22,8 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/dashboard/accounts', icon: Wallet, label: 'Accounts' },
-  { href: '/dashboard/categories', icon: Tags, label: 'Categories' }
+  { href: '/dashboard/categories', icon: Tags, label: 'Categories' },
+  { href: '/dashboard/settings', icon: Settings, label: 'Settings' }
 ]
 
 export function AppSidebar({ userEmail }: { userEmail: string }) {

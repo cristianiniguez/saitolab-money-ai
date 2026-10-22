@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaitoLab Money
+
+Personal finance app: accounts, transactions, transfers, contacts, loans, categories.
+
+## Stack
+
+- **Frontend:** Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS 4, shadcn/radix-ui components.
+- **Forms/validation:** react-hook-form + zod schemas (`lib/schemas/`).
+- **Backend:** [InsForge](https://insforge.dev) — Postgres database, auth, storage, realtime, edge functions, AI gateway, payments — accessed via `@insforge/sdk` (`lib/insforge/client.ts` client-side, `lib/insforge/server.ts` server-side).
+- **Auth routing:** `proxy.ts` (Next.js middleware) gates `/dashboard/*` behind the `insforge_access_token` cookie and redirects authenticated users away from `/sign-in`, `/sign-up`, `/verify-email`.
+- **Edge functions:** `insforge/functions/sync-currencies` — deployed to InsForge's Deno runtime, not bundled into the Next.js build.
+- **Database:** schema-managed via SQL migrations in `migrations/`, applied with the InsForge CLI.
+
+## Architecture
+
+```
+Browser
+  │
+  ▼
+Next.js app (Vercel, via InsForge deployments)
+  │  @insforge/sdk (NEXT_PUBLIC_INSFORGE_URL / NEXT_PUBLIC_INSFORGE_ANON_KEY)
+  ▼
+InsForge backend (Postgres + Auth + Storage + Realtime + Functions)
+  │
+  ▼
+Edge function: sync-currencies (Deno, deployed separately)
+```
+
+The app talks to InsForge entirely through the SDK — no custom API routes for CRUD. Each environment (dev / prod) is a **separate InsForge backend instance** (its own Postgres, own API keys) and a **separate frontend deployment**, so they never share data.
+
+## Environments
+
+InsForge branching gives dev and prod fully isolated backends sharing the same auth `JWT_SECRET`. The frontend is deployed once per backend context via `npx -y @insforge/cli deployments deploy`.
+
+| Environment | Frontend URL | InsForge backend | Env file |
+|---|---|---|---|
+| **Production** | https://saitolab-money-ai.insforge.site | `https://znr8sdut.us-east.insforge.app` (parent project) | `.env.local.prod` |
+| **Development** | https://saitolab-money-ai-dev.insforge.site | `https://znr8sdut-x4k.us-east.insforge.app` (`dev` branch) | `.env.local` |
+
+Switching which backend the CLI deploys/targets:
+
+```bash
+npx -y @insforge/cli branch switch dev       # target dev branch
+npx -y @insforge/cli branch switch --parent  # target prod
+```
+
+`deployments env` vars are scoped per linked context (dev vs. prod), so `deployments deploy .` always ships the right `NEXT_PUBLIC_INSFORGE_URL` / `NEXT_PUBLIC_INSFORGE_ANON_KEY` for whichever side is currently switched to.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Local dev reads `.env.local` (points at the `dev` InsForge branch).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database migrations
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx -y @insforge/cli db migrations new <name>
+npx -y @insforge/cli db migrations up --all
+```
 
-## Learn More
+## Deploying
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Build check
+pnpm build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Deploy whichever backend context is currently switched to
+npx -y @insforge/cli deployments deploy .
+```

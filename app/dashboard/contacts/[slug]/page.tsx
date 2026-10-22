@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { getCurrentUser, getAccessToken, createInsForgeServerClient } from '@/lib/insforge/server'
+import { type Account } from '@/lib/schemas/accounts'
 import { type Contact } from '@/lib/schemas/contacts'
 import { type Loan } from '@/lib/schemas/loans'
 import { ContactDetailClient } from './contact-detail-client'
@@ -26,12 +27,18 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
 
   if (!contact) notFound()
 
-  const { data: loans } = await insforge.database
-    .from('loans')
-    .select('*, contacts(name)')
-    .eq('contact_id', (contact as Contact).id)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [{ data: loans }, { data: accounts }] = await Promise.all([
+    insforge.database
+      .from('loans')
+      .select('*, contacts(name), accounts(name)')
+      .eq('contact_id', (contact as Contact).id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    insforge.database
+      .from('accounts')
+      .select('*')
+      .eq('user_id', user.id)
+  ])
 
   const loanList = (loans as Loan[]) ?? []
   const balance = loanList.reduce((sum, loan) => {
@@ -45,6 +52,7 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
           contact={contact as Contact}
           balance={balance}
           loans={loanList}
+          accounts={(accounts as Account[]) ?? []}
         />
       </main>
     </div>

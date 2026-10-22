@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { type Account } from '@/lib/schemas/accounts'
 import { loanSchema, LOAN_DIRECTIONS, type Loan, type LoanValues } from '@/lib/schemas/loans'
 import { toast } from 'sonner'
 import { createLoan, updateLoan } from './actions'
@@ -30,28 +31,31 @@ const DIRECTION_LABELS: Record<typeof LOAN_DIRECTIONS[number], string> = {
   borrowed: 'Borrowed (you owe them)'
 }
 
+const NO_ACCOUNT = 'none'
+
 interface LoanModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   contactId: string
   loan?: Loan | null
+  accounts: Account[]
   onSuccess: () => void
 }
 
-export function LoanModal({ open, onOpenChange, contactId, loan, onSuccess }: LoanModalProps) {
+export function LoanModal({ open, onOpenChange, contactId, loan, accounts, onSuccess }: LoanModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<LoanValues>({
-    defaultValues: { contact_id: contactId, direction: 'lent', amount: 0, description: '' },
+    defaultValues: { account_id: null, contact_id: contactId, direction: 'lent', amount: 0, description: '' },
     resolver: zodResolver(loanSchema)
   })
 
   useEffect(() => {
     if (open) {
       form.reset(loan
-        ? { contact_id: contactId, direction: loan.direction, amount: loan.amount, description: loan.description }
-        : { contact_id: contactId, direction: 'lent', amount: 0, description: '' }
+        ? { account_id: loan.account_id, contact_id: contactId, direction: loan.direction, amount: loan.amount, description: loan.description }
+        : { account_id: null, contact_id: contactId, direction: 'lent', amount: 0, description: '' }
       )
       setServerError(null)
     }
@@ -126,6 +130,33 @@ export function LoanModal({ open, onOpenChange, contactId, loan, onSuccess }: Lo
                   placeholder="0.00"
                   aria-invalid={fieldState.invalid}
                 />
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="account_id"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Account (optional)</FieldLabel>
+                <Select
+                  value={field.value ?? NO_ACCOUNT}
+                  onValueChange={value => field.onChange(value === NO_ACCOUNT ? null : value)}
+                >
+                  <SelectTrigger id="account_id" className="w-full" aria-invalid={fieldState.invalid}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_ACCOUNT}>No account</SelectItem>
+                    {accounts.map(account => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
               </Field>
             )}

@@ -48,6 +48,7 @@ export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
       <tr className="border-b border-border last:border-0">
         <td className="px-4 py-3 text-foreground">{formattedDate}</td>
         <td className="px-4 py-3 text-foreground">{loan.description || '—'}</td>
+        <td className="px-4 py-3 text-muted-foreground">{loan.accounts?.name ?? '—'}</td>
         <td className="px-4 py-3">
           <span className={loan.direction === 'lent' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
             {loan.direction === 'lent' ? 'Lent' : 'Borrowed'}

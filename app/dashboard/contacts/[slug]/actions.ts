@@ -16,6 +16,7 @@ export async function createLoan(values: LoanValues): Promise<ActionResult> {
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
   const { error } = await insforge.database.from('loans').insert({
+    account_id: parsed.data.account_id,
     contact_id: parsed.data.contact_id,
     direction: parsed.data.direction,
     amount: parsed.data.amount,
@@ -41,6 +42,7 @@ export async function updateLoan(id: string, values: LoanValues): Promise<Action
   const { error } = await insforge.database
     .from('loans')
     .update({
+      account_id: parsed.data.account_id,
       contact_id: parsed.data.contact_id,
       direction: parsed.data.direction,
       amount: parsed.data.amount,

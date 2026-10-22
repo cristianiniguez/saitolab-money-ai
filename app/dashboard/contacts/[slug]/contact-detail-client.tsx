@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { PlusIcon, HandCoinsIcon } from 'lucide-react'
+import { type Account } from '@/lib/schemas/accounts'
 import { type Contact } from '@/lib/schemas/contacts'
 import { type Loan } from '@/lib/schemas/loans'
 import { Button } from '@/components/ui/button'
@@ -17,9 +18,10 @@ interface ContactDetailClientProps {
   contact: Contact
   balance: number
   loans: Loan[]
+  accounts: Account[]
 }
 
-export function ContactDetailClient({ contact, balance, loans }: ContactDetailClientProps) {
+export function ContactDetailClient({ contact, balance, loans, accounts }: ContactDetailClientProps) {
   const router = useRouter()
   const [, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -93,6 +95,7 @@ export function ContactDetailClient({ contact, balance, loans }: ContactDetailCl
                     <tr className="border-b border-border bg-muted/50">
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Description</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Account</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Direction</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">Amount</th>
                       <th className="px-4 py-3" />
@@ -118,6 +121,7 @@ export function ContactDetailClient({ contact, balance, loans }: ContactDetailCl
         onOpenChange={setModalOpen}
         contactId={contact.id}
         loan={selectedLoan}
+        accounts={accounts}
         onSuccess={handleSuccess}
       />
     </div>

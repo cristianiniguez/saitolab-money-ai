@@ -38,6 +38,7 @@ interface TransferModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   transfer?: Transfer | null
+  defaultAccountId?: string
   accounts: Account[]
   onSuccess: () => void
 }
@@ -51,7 +52,7 @@ const emptyValues: TransferValues = {
   to_account_id: ''
 }
 
-export function TransferModal({ open, onOpenChange, transfer, accounts, onSuccess }: TransferModalProps) {
+export function TransferModal({ open, onOpenChange, transfer, defaultAccountId, accounts, onSuccess }: TransferModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -71,11 +72,11 @@ export function TransferModal({ open, onOpenChange, transfer, accounts, onSucces
             from_account_id: transfer.from_account_id,
             to_account_id: transfer.to_account_id
           }
-        : emptyValues
+        : { ...emptyValues, from_account_id: defaultAccountId ?? '' }
       )
       setServerError(null)
     }
-  }, [open, transfer, form])
+  }, [open, transfer, defaultAccountId, form])
 
   const onSubmit = (data: TransferValues) => {
     setServerError(null)

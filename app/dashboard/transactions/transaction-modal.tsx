@@ -44,6 +44,8 @@ interface TransactionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   transaction?: Transaction | null
+  defaultAccountId?: string
+  defaultCategoryId?: string
   accounts: Account[]
   categories: Category[]
   onSuccess: () => void
@@ -60,6 +62,8 @@ export function TransactionModal({
   open,
   onOpenChange,
   transaction,
+  defaultAccountId,
+  defaultCategoryId,
   accounts,
   categories,
   onSuccess
@@ -92,9 +96,9 @@ export function TransactionModal({
               type: transaction.type
             }
           : {
-              account_id: '',
+              account_id: defaultAccountId ?? '',
               amount: undefined,
-              category_id: undefined,
+              category_id: defaultCategoryId,
               date: '',
               name: '',
               type: 'expense'
@@ -102,7 +106,7 @@ export function TransactionModal({
       )
       setServerError(null)
     }
-  }, [open, transaction, form])
+  }, [open, transaction, defaultAccountId, defaultCategoryId, form])
 
   const onSubmit = (data: TransactionValues) => {
     setServerError(null)

@@ -48,17 +48,18 @@ interface LoanModalProps {
   contactId?: string
   contacts?: Contact[]
   loan?: Loan | null
+  defaultAccountId?: string
   accounts: Account[]
   onSuccess: () => void
 }
 
-export function LoanModal({ open, onOpenChange, contactId, contacts, loan, accounts, onSuccess }: LoanModalProps) {
+export function LoanModal({ open, onOpenChange, contactId, contacts, loan, defaultAccountId, accounts, onSuccess }: LoanModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
   const showContactSelect = contactId === undefined
 
   const form = useForm<LoanValues>({
-    defaultValues: { account_id: null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' },
+    defaultValues: { account_id: defaultAccountId ?? null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' },
     resolver: zodResolver(loanSchema)
   })
 
@@ -66,11 +67,11 @@ export function LoanModal({ open, onOpenChange, contactId, contacts, loan, accou
     if (open) {
       form.reset(loan
         ? { account_id: loan.account_id, contact_id: loan.contact_id, date: loan.date, direction: loan.direction, amount: loan.amount, description: loan.description }
-        : { account_id: null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' }
+        : { account_id: defaultAccountId ?? null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' }
       )
       setServerError(null)
     }
-  }, [open, loan, contactId, form])
+  }, [open, loan, contactId, defaultAccountId, form])
 
   const onSubmit = (data: LoanValues) => {
     setServerError(null)

@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getCurrentUser, getAccessToken, createInsForgeServerClient } from '@/lib/insforge/server'
 import { type Category } from '@/lib/schemas/categories'
 import { type Transaction } from '@/lib/schemas/transactions'
+import { type Account } from '@/lib/schemas/accounts'
 import { CategoryDetailClient } from './category-detail-client'
 
 interface CategoryDetailPageProps {
@@ -26,7 +27,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
 
   if (!category) notFound()
 
-  const [{ data: allTransactions }, { data: recentTransactions }] = await Promise.all([
+  const [{ data: allTransactions }, { data: recentTransactions }, { data: accounts }, { data: categories }] = await Promise.all([
     insforge.database
       .from('transactions')
       .select('amount, type')
@@ -38,7 +39,15 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
       .eq('category_id', (category as Category).id)
       .eq('user_id', user.id)
       .order('date', { ascending: false })
-      .limit(10)
+      .limit(10),
+    insforge.database
+      .from('accounts')
+      .select('*')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('categories')
+      .select('*')
+      .eq('user_id', user.id)
   ])
 
   const txList = (allTransactions ?? []) as { amount: number, type: string }[]
@@ -53,6 +62,8 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
           category={category as Category}
           balance={balance}
           transactions={(recentTransactions as Transaction[]) ?? []}
+          accounts={(accounts as Account[]) ?? []}
+          categories={(categories as Category[]) ?? []}
         />
       </main>
     </div>

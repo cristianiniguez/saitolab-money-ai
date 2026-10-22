@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ReceiptIcon } from 'lucide-react'
+import { PlusIcon, ReceiptIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
 import { type Category } from '@/lib/schemas/categories'
 import { type Contact } from '@/lib/schemas/contacts'
@@ -11,8 +11,8 @@ import { type Transfer } from '@/lib/schemas/transfers'
 import { type Loan } from '@/lib/schemas/loans'
 import { type ActivityItem } from '@/lib/activity'
 import { convertCurrency } from '@/lib/utils/currency'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ActivityRow } from './activity-row'
 import { TransactionModal } from '@/app/dashboard/transactions/transaction-modal'
 import { TransferModal } from './transfer-modal'
@@ -77,6 +77,21 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
     else setLoanModalOpen(true)
   }
 
+  const openCreateTransaction = () => {
+    setSelectedTransaction(null)
+    setTransactionModalOpen(true)
+  }
+
+  const openCreateTransfer = () => {
+    setSelectedTransfer(null)
+    setTransferModalOpen(true)
+  }
+
+  const openCreateLoan = () => {
+    setSelectedLoan(null)
+    setLoanModalOpen(true)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -111,7 +126,23 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
 
       {/* Activity section */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Last 10 activity</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">Last 10 activity</h2>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={openCreateTransaction}>
+              <PlusIcon />
+              Transaction
+            </Button>
+            <Button size="sm" variant="outline" onClick={openCreateTransfer}>
+              <PlusIcon />
+              Transfer
+            </Button>
+            <Button size="sm" variant="outline" onClick={openCreateLoan}>
+              <PlusIcon />
+              Loan
+            </Button>
+          </div>
+        </div>
 
         {items.length === 0
           ? (
@@ -128,81 +159,31 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
               </div>
             )
           : (
-              <Tabs defaultValue="table">
-                <TabsList>
-                  <TabsTrigger value="table">Table</TabsTrigger>
-                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                </TabsList>
-
-                {/* Table tab */}
-                <TabsContent value="table">
-                  <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-border bg-muted/50">
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Detail</th>
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type</th>
-                          <th className="px-4 py-3 text-right font-medium text-muted-foreground">Amount</th>
-                          <th className="px-4 py-3" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {items.map(item => (
-                          <ActivityRow
-                            key={`${item.kind}-${item.id}`}
-                            item={item}
-                            currencySymbol={account.currencies?.symbol}
-                            onEdit={openEdit}
-                            onSuccess={handleSuccess}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </TabsContent>
-
-                {/* Timeline tab */}
-                <TabsContent value="timeline">
-                  <div className="flex flex-col">
-                    {items.map((item, index) => {
-                      const formattedDate = new Date(item.date.length > 10 ? item.date : `${item.date}T00:00:00`).toLocaleDateString('en-US', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })
-                      const isLast = index === items.length - 1
-                      const isPositive = item.signedAmount >= 0
-
-                      return (
-                        <div key={`${item.kind}-${item.id}`} className="flex gap-4">
-                          {/* Timeline spine */}
-                          <div className="flex flex-col items-center">
-                            <div className={`mt-1 size-3 shrink-0 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
-                            {!isLast && <div className="w-px flex-1 bg-border my-1" />}
-                          </div>
-
-                          {/* Content */}
-                          <div className="flex flex-1 items-start justify-between gap-4 pb-4">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium text-foreground">{item.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {formattedDate}
-                                {' · '}{item.typeLabel}
-                                {item.detailLabel ? ` · ${item.detailLabel}` : ''}
-                              </span>
-                            </div>
-                            <span className={`text-sm font-semibold tabular-nums shrink-0 ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              {isPositive ? '+' : '-'}{fmt(Math.abs(item.signedAmount), account.currencies?.symbol)}
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Detail</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type</th>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">Amount</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map(item => (
+                      <ActivityRow
+                        key={`${item.kind}-${item.id}`}
+                        item={item}
+                        currencySymbol={account.currencies?.symbol}
+                        onEdit={openEdit}
+                        onSuccess={handleSuccess}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
       </div>
 
@@ -210,6 +191,7 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
         open={transactionModalOpen}
         onOpenChange={setTransactionModalOpen}
         transaction={selectedTransaction}
+        defaultAccountId={account.id}
         accounts={accounts}
         categories={categories}
         onSuccess={handleSuccess}
@@ -218,6 +200,7 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
         open={transferModalOpen}
         onOpenChange={setTransferModalOpen}
         transfer={selectedTransfer}
+        defaultAccountId={account.id}
         accounts={accounts}
         onSuccess={handleSuccess}
       />
@@ -226,6 +209,7 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
         onOpenChange={setLoanModalOpen}
         contacts={contacts}
         loan={selectedLoan}
+        defaultAccountId={account.id}
         accounts={accounts}
         onSuccess={handleSuccess}
       />

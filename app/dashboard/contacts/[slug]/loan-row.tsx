@@ -28,7 +28,7 @@ export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  const formattedDate = new Date(loan.created_at).toLocaleDateString('en-US', {
+  const formattedDate = new Date(`${loan.date}T00:00:00`).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'

@@ -1,24 +1,27 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ReceiptIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
+import { type Category } from '@/lib/schemas/categories'
+import { type Contact } from '@/lib/schemas/contacts'
 import { type Transaction } from '@/lib/schemas/transactions'
+import { type Transfer } from '@/lib/schemas/transfers'
+import { type Loan } from '@/lib/schemas/loans'
+import { type ActivityItem } from '@/lib/activity'
 import { convertCurrency } from '@/lib/utils/currency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { TransactionRow } from '@/app/dashboard/transactions/transaction-row'
+import { ActivityRow } from './activity-row'
+import { TransactionModal } from '@/app/dashboard/transactions/transaction-modal'
+import { TransferModal } from './transfer-modal'
+import { LoanModal } from '@/app/dashboard/contacts/[slug]/loan-modal'
 
 const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> = {
   bank: { className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', label: 'Bank' },
   crypto: { className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', label: 'Crypto' },
   wallet: { className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: 'Wallet' }
-}
-
-const TIMELINE_DOT: Record<Transaction['type'], string> = {
-  expense: 'bg-red-500',
-  income: 'bg-green-500'
 }
 
 const fmt = (n: number, currencySymbol = 'USD') => {
@@ -33,13 +36,23 @@ const fmt = (n: number, currencySymbol = 'USD') => {
 interface AccountDetailClientProps {
   account: Account
   balance: number
-  transactions: Transaction[]
+  items: ActivityItem[]
+  accounts: Account[]
+  categories: Category[]
+  contacts: Contact[]
   mainCurrency?: { symbol: string; slug: string; rate_usd: number } | null
 }
 
-export function AccountDetailClient({ account, balance, transactions, mainCurrency }: AccountDetailClientProps) {
+export function AccountDetailClient({ account, balance, items, accounts, categories, contacts, mainCurrency }: AccountDetailClientProps) {
   const router = useRouter()
   const [, startRefreshTransition] = useTransition()
+
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [transferModalOpen, setTransferModalOpen] = useState(false)
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null)
+  const [loanModalOpen, setLoanModalOpen] = useState(false)
+  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null)
 
   const badge = TYPE_BADGE[account.type]
   const accountRateUsd = account.currencies?.rate_usd ?? 1
@@ -52,6 +65,16 @@ export function AccountDetailClient({ account, balance, transactions, mainCurren
     startRefreshTransition(() => {
       router.refresh()
     })
+  }
+
+  const openEdit = (item: ActivityItem) => {
+    if (item.kind === 'transaction') setSelectedTransaction(item.raw)
+    else if (item.kind === 'transfer') setSelectedTransfer(item.raw)
+    else setSelectedLoan(item.raw)
+
+    if (item.kind === 'transaction') setTransactionModalOpen(true)
+    else if (item.kind === 'transfer') setTransferModalOpen(true)
+    else setLoanModalOpen(true)
   }
 
   return (
@@ -86,20 +109,20 @@ export function AccountDetailClient({ account, balance, transactions, mainCurren
         </CardContent>
       </Card>
 
-      {/* Transactions section */}
+      {/* Activity section */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Last 10 transactions</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">Last 10 activity</h2>
 
-        {transactions.length === 0
+        {items.length === 0
           ? (
               <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-muted/20 py-20 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                   <ReceiptIcon className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium text-foreground">No transactions yet</p>
+                  <p className="font-medium text-foreground">No activity yet</p>
                   <p className="text-sm text-muted-foreground">
-                    Transactions for this account will appear here.
+                    Transactions, transfers and loans for this account will appear here.
                   </p>
                 </div>
               </div>
@@ -119,19 +142,19 @@ export function AccountDetailClient({ account, balance, transactions, mainCurren
                         <tr className="border-b border-border bg-muted/50">
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Account</th>
-                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Category</th>
+                          <th className="px-4 py-3 text-left font-medium text-muted-foreground">Detail</th>
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type</th>
                           <th className="px-4 py-3 text-right font-medium text-muted-foreground">Amount</th>
                           <th className="px-4 py-3" />
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map(transaction => (
-                          <TransactionRow
-                            key={transaction.id}
-                            transaction={transaction}
-                            onEdit={() => {}}
+                        {items.map(item => (
+                          <ActivityRow
+                            key={`${item.kind}-${item.id}`}
+                            item={item}
+                            currencySymbol={account.currencies?.symbol}
+                            onEdit={openEdit}
                             onSuccess={handleSuccess}
                           />
                         ))}
@@ -143,33 +166,35 @@ export function AccountDetailClient({ account, balance, transactions, mainCurren
                 {/* Timeline tab */}
                 <TabsContent value="timeline">
                   <div className="flex flex-col">
-                    {transactions.map((transaction, index) => {
-                      const formattedDate = new Date(transaction.date + 'T00:00:00').toLocaleDateString('en-US', {
+                    {items.map((item, index) => {
+                      const formattedDate = new Date(item.date.length > 10 ? item.date : `${item.date}T00:00:00`).toLocaleDateString('en-US', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric'
                       })
-                      const isLast = index === transactions.length - 1
+                      const isLast = index === items.length - 1
+                      const isPositive = item.signedAmount >= 0
 
                       return (
-                        <div key={transaction.id} className="flex gap-4">
+                        <div key={`${item.kind}-${item.id}`} className="flex gap-4">
                           {/* Timeline spine */}
                           <div className="flex flex-col items-center">
-                            <div className={`mt-1 size-3 shrink-0 rounded-full ${TIMELINE_DOT[transaction.type]}`} />
+                            <div className={`mt-1 size-3 shrink-0 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
                             {!isLast && <div className="w-px flex-1 bg-border my-1" />}
                           </div>
 
                           {/* Content */}
-                          <div className={`flex flex-1 items-start justify-between gap-4 pb-4 ${isLast ? '' : ''}`}>
+                          <div className="flex flex-1 items-start justify-between gap-4 pb-4">
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium text-foreground">{transaction.name}</span>
+                              <span className="text-sm font-medium text-foreground">{item.name}</span>
                               <span className="text-xs text-muted-foreground">
                                 {formattedDate}
-                                {transaction.categories?.name ? ` · ${transaction.categories.name}` : ''}
+                                {' · '}{item.typeLabel}
+                                {item.detailLabel ? ` · ${item.detailLabel}` : ''}
                               </span>
                             </div>
-                            <span className={`text-sm font-semibold tabular-nums shrink-0 ${transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              {transaction.type === 'income' ? '+' : '-'}{fmt(transaction.amount, account.currencies?.symbol)}
+                            <span className={`text-sm font-semibold tabular-nums shrink-0 ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {isPositive ? '+' : '-'}{fmt(Math.abs(item.signedAmount), account.currencies?.symbol)}
                             </span>
                           </div>
                         </div>
@@ -180,6 +205,30 @@ export function AccountDetailClient({ account, balance, transactions, mainCurren
               </Tabs>
             )}
       </div>
+
+      <TransactionModal
+        open={transactionModalOpen}
+        onOpenChange={setTransactionModalOpen}
+        transaction={selectedTransaction}
+        accounts={accounts}
+        categories={categories}
+        onSuccess={handleSuccess}
+      />
+      <TransferModal
+        open={transferModalOpen}
+        onOpenChange={setTransferModalOpen}
+        transfer={selectedTransfer}
+        accounts={accounts}
+        onSuccess={handleSuccess}
+      />
+      <LoanModal
+        open={loanModalOpen}
+        onOpenChange={setLoanModalOpen}
+        contacts={contacts}
+        loan={selectedLoan}
+        accounts={accounts}
+        onSuccess={handleSuccess}
+      />
     </div>
   )
 }

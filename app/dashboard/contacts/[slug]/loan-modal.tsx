@@ -3,12 +3,16 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { format, parseISO } from 'date-fns'
+import { CalendarIcon } from 'lucide-react'
 import { type Account } from '@/lib/schemas/accounts'
+import { type Contact } from '@/lib/schemas/contacts'
 import { loanSchema, LOAN_DIRECTIONS, type Loan, type LoanValues } from '@/lib/schemas/loans'
 import { toast } from 'sonner'
 import { createLoan, updateLoan } from './actions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Dialog,
   DialogContent,
@@ -18,6 +22,11 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -36,26 +45,28 @@ const NO_ACCOUNT = 'none'
 interface LoanModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  contactId: string
+  contactId?: string
+  contacts?: Contact[]
   loan?: Loan | null
   accounts: Account[]
   onSuccess: () => void
 }
 
-export function LoanModal({ open, onOpenChange, contactId, loan, accounts, onSuccess }: LoanModalProps) {
+export function LoanModal({ open, onOpenChange, contactId, contacts, loan, accounts, onSuccess }: LoanModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
+  const showContactSelect = contactId === undefined
 
   const form = useForm<LoanValues>({
-    defaultValues: { account_id: null, contact_id: contactId, direction: 'lent', amount: 0, description: '' },
+    defaultValues: { account_id: null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' },
     resolver: zodResolver(loanSchema)
   })
 
   useEffect(() => {
     if (open) {
       form.reset(loan
-        ? { account_id: loan.account_id, contact_id: contactId, direction: loan.direction, amount: loan.amount, description: loan.description }
-        : { account_id: null, contact_id: contactId, direction: 'lent', amount: 0, description: '' }
+        ? { account_id: loan.account_id, contact_id: loan.contact_id, date: loan.date, direction: loan.direction, amount: loan.amount, description: loan.description }
+        : { account_id: null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' }
       )
       setServerError(null)
     }
@@ -91,6 +102,67 @@ export function LoanModal({ open, onOpenChange, contactId, loan, accounts, onSuc
               <AlertDescription>{serverError}</AlertDescription>
             </Alert>
           )}
+
+          {showContactSelect && (
+            <Controller
+              name="contact_id"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Contact</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="contact_id" className="w-full" aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Select a contact" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(contacts ?? []).map(contact => (
+                        <SelectItem key={contact.id} value={contact.id}>
+                          {contact.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
+              )}
+            />
+          )}
+
+          <Controller
+            name="date"
+            control={form.control}
+            render={({ field, fieldState }) => {
+              const selectedDate = field.value ? parseISO(field.value) : undefined
+              return (
+                <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                  <FieldLabel>Date</FieldLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        aria-invalid={fieldState.invalid}
+                        className="w-full justify-start font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {selectedDate
+                          ? format(selectedDate, 'PPP')
+                          : <span className="text-muted-foreground">Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={date => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+                </Field>
+              )
+            }}
+          />
 
           <Controller
             name="direction"

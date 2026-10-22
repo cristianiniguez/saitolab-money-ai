@@ -33,7 +33,7 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
       .select('*, contacts(name), accounts(name)')
       .eq('contact_id', (contact as Contact).id)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false }),
+      .order('date', { ascending: false }),
     insforge.database
       .from('accounts')
       .select('*')

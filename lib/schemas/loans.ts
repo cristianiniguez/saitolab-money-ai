@@ -7,6 +7,7 @@ export const loanSchema = z.object({
   account_id: z.string().nullable(),
   amount: z.coerce.number().positive('Amount must be greater than 0'),
   contact_id: z.string().min(1, 'Contact is required'),
+  date: z.string().min(1, 'Date is required'),
   description: z.string(),
   direction: z.enum(LOAN_DIRECTIONS, { message: 'Select a valid direction' })
 })

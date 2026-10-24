@@ -15,8 +15,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ActivityRow } from './activity-row'
 import { TransactionModal } from '@/app/dashboard/transactions/transaction-modal'
-import { TransferModal } from './transfer-modal'
-import { LoanModal } from '@/app/dashboard/contacts/[slug]/loan-modal'
+import { TransferModal } from '@/app/dashboard/transfers/transfer-modal'
+import { LoanModal } from '@/app/dashboard/loans/loan-modal'
 
 const TYPE_BADGE: Record<Account['type'], { label: string, className: string }> = {
   bank: { className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', label: 'Bank' },

@@ -8,7 +8,7 @@ import { type Contact } from '@/lib/schemas/contacts'
 import { type Loan } from '@/lib/schemas/loans'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoanModal } from './loan-modal'
+import { LoanModal } from '@/app/dashboard/loans/loan-modal'
 import { LoanRow } from './loan-row'
 
 const fmt = (n: number) =>

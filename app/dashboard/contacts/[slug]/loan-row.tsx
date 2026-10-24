@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Loan } from '@/lib/schemas/loans'
 import { toast } from 'sonner'
-import { deleteLoan } from './actions'
+import { deleteLoan } from '@/app/dashboard/loans/actions'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

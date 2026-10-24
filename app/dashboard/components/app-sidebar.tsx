@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowLeftRight, LayoutDashboard, Settings, Tags, Users, Wallet } from 'lucide-react'
+import { ArrowLeftRight, ArrowRightLeft, HandCoins, LayoutDashboard, Settings, Tags, Users, Wallet } from 'lucide-react'
 import { signOutAction } from '@/app/(main)/auth/actions'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +21,8 @@ import {
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/transactions', icon: ArrowLeftRight, label: 'Transactions' },
+  { href: '/dashboard/transfers', icon: ArrowRightLeft, label: 'Transfers' },
+  { href: '/dashboard/loans', icon: HandCoins, label: 'Loans' },
   { href: '/dashboard/accounts', icon: Wallet, label: 'Accounts' },
   { href: '/dashboard/categories', icon: Tags, label: 'Categories' },
   { href: '/dashboard/contacts', icon: Users, label: 'Contacts' },

@@ -6,7 +6,7 @@ import { type ActivityItem } from '@/lib/activity'
 import { toast } from 'sonner'
 import { deleteTransaction } from '@/app/dashboard/transactions/actions'
 import { deleteTransfer } from '@/app/dashboard/transfers/actions'
-import { deleteLoan } from '@/app/dashboard/contacts/[slug]/actions'
+import { deleteLoan } from '@/app/dashboard/loans/actions'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

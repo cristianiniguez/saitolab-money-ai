@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 interface ContactsClientProps {
   contacts: Contact[]
   balances: Record<string, number>
+  currencySymbol: string
 }
 
 function ContactCardSkeleton() {
@@ -32,7 +33,7 @@ function ContactCardSkeleton() {
   )
 }
 
-export function ContactsClient({ contacts, balances }: ContactsClientProps) {
+export function ContactsClient({ contacts, balances, currencySymbol }: ContactsClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -106,6 +107,7 @@ export function ContactsClient({ contacts, balances }: ContactsClientProps) {
                     key={contact.id}
                     contact={contact}
                     balance={balances[contact.id] ?? 0}
+                    currencySymbol={currencySymbol}
                     onEdit={() => openEdit(contact)}
                     onSuccess={handleSuccess}
                   />

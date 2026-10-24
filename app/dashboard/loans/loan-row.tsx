@@ -5,6 +5,7 @@ import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Loan } from '@/lib/schemas/loans'
 import { toast } from 'sonner'
 import { deleteLoan } from './actions'
+import { formatMoney } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
 
 interface LoanRowProps {
   loan: Loan
+  currencySymbol: string
   onEdit: () => void
   onSuccess: () => void
 }
@@ -26,7 +28,7 @@ const DIRECTION_BADGE = {
   lent: { className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: 'Lent' }
 }
 
-export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
+export function LoanRow({ loan, currencySymbol, onEdit, onSuccess }: LoanRowProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const badge = DIRECTION_BADGE[loan.direction]
@@ -37,10 +39,7 @@ export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
     year: 'numeric'
   })
 
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    style: 'currency'
-  }).format(loan.amount)
+  const formattedAmount = formatMoney(loan.amount, currencySymbol)
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false)

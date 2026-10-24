@@ -16,18 +16,17 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' }).format(Math.abs(n))
+import { formatMoney } from '@/lib/utils/currency'
 
 interface ContactCardProps {
   contact: Contact
   balance: number
+  currencySymbol: string
   onEdit: () => void
   onSuccess: () => void
 }
 
-export function ContactCard({ contact, balance, onEdit, onSuccess }: ContactCardProps) {
+export function ContactCard({ contact, balance, currencySymbol, onEdit, onSuccess }: ContactCardProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -70,7 +69,7 @@ export function ContactCard({ contact, balance, onEdit, onSuccess }: ContactCard
         </CardHeader>
         <CardContent className="flex items-center gap-2">
           <span className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {fmt(balance)}
+            {formatMoney(Math.abs(balance), currencySymbol)}
           </span>
           <span className="text-xs text-muted-foreground">{balanceLabel}</span>
         </CardContent>

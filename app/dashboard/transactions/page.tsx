@@ -15,7 +15,7 @@ export default async function TransactionsPage() {
   const [{ data: transactions }, { data: accounts }, { data: categories }] = await Promise.all([
     insforge.database
       .from('transactions')
-      .select('*, accounts(name), categories(name)')
+      .select('*, accounts(name, currencies(symbol)), categories(name)')
       .eq('user_id', user.id)
       .order('date', { ascending: false })
       .limit(10),

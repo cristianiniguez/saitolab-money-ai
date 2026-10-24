@@ -13,10 +13,10 @@ export interface AccountChartSlice {
   fill: string
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+export function BalanceChart({ slices, currencyCode }: { slices: AccountChartSlice[], currencyCode: string }) {
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(n)
 
-export function BalanceChart({ slices }: { slices: AccountChartSlice[] }) {
   const positiveSlices = slices.filter(s => s.netBalance > 0)
 
   const chartConfig = Object.fromEntries(

@@ -10,18 +10,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoanModal } from '@/app/dashboard/loans/loan-modal'
 import { LoanRow } from './loan-row'
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Math.abs(n))
+import { formatMoney } from '@/lib/utils/currency'
 
 interface ContactDetailClientProps {
   contact: Contact
   balance: number
   loans: Loan[]
   accounts: Account[]
+  currencySymbol: string
+  mainCurrencyId: string | null
 }
 
-export function ContactDetailClient({ contact, balance, loans, accounts }: ContactDetailClientProps) {
+export function ContactDetailClient({ contact, balance, loans, accounts, currencySymbol, mainCurrencyId }: ContactDetailClientProps) {
   const router = useRouter()
   const [, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -61,7 +61,7 @@ export function ContactDetailClient({ contact, balance, loans, accounts }: Conta
         </CardHeader>
         <CardContent>
           <div className={`text-3xl font-bold ${balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-            {fmt(balance)}
+            {formatMoney(Math.abs(balance), currencySymbol)}
           </div>
           <span className="text-xs text-muted-foreground">{balanceLabel}</span>
         </CardContent>
@@ -106,6 +106,7 @@ export function ContactDetailClient({ contact, balance, loans, accounts }: Conta
                       <LoanRow
                         key={loan.id}
                         loan={loan}
+                        currencySymbol={currencySymbol}
                         onEdit={() => openEdit(loan)}
                         onSuccess={handleSuccess}
                       />
@@ -122,6 +123,7 @@ export function ContactDetailClient({ contact, balance, loans, accounts }: Conta
         contactId={contact.id}
         loan={selectedLoan}
         accounts={accounts}
+        mainCurrencyId={mainCurrencyId}
         onSuccess={handleSuccess}
       />
     </div>

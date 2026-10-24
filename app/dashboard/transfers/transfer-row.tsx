@@ -5,6 +5,7 @@ import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Transfer } from '@/lib/schemas/transfers'
 import { toast } from 'sonner'
 import { deleteTransfer } from './actions'
+import { formatMoney } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,16 +20,13 @@ interface TransferRowProps {
   transfer: Transfer
   fromAccountName?: string
   toAccountName?: string
+  fromCurrency?: string
+  toCurrency?: string
   onEdit: () => void
   onSuccess: () => void
 }
 
-const formatAmount = (amount: number) => new Intl.NumberFormat('en-US', {
-  currency: 'USD',
-  style: 'currency'
-}).format(amount)
-
-export function TransferRow({ transfer, fromAccountName, toAccountName, onEdit, onSuccess }: TransferRowProps) {
+export function TransferRow({ transfer, fromAccountName, toAccountName, fromCurrency, toCurrency, onEdit, onSuccess }: TransferRowProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -55,12 +53,12 @@ export function TransferRow({ transfer, fromAccountName, toAccountName, onEdit, 
         <td className="px-4 py-3 text-sm text-muted-foreground">{fromAccountName ?? '—'}</td>
         <td className="px-4 py-3 text-sm text-muted-foreground">{toAccountName ?? '—'}</td>
         <td className="px-4 py-3 text-sm font-medium tabular-nums text-right">
-          {formatAmount(transfer.amount)}
-          {transfer.to_amount !== transfer.amount && (
+          {formatMoney(transfer.amount, fromCurrency)}
+          {(transfer.to_amount !== transfer.amount || fromCurrency !== toCurrency) && (
             <span className="block text-xs font-normal text-muted-foreground">
               →
               {' '}
-              {formatAmount(transfer.to_amount)}
+              {formatMoney(transfer.to_amount, toCurrency)}
             </span>
           )}
         </td>

@@ -41,9 +41,10 @@ interface AccountDetailClientProps {
   categories: Category[]
   contacts: Contact[]
   mainCurrency?: { symbol: string; slug: string; rate_usd: number } | null
+  mainCurrencyId: string | null
 }
 
-export function AccountDetailClient({ account, balance, items, accounts, categories, contacts, mainCurrency }: AccountDetailClientProps) {
+export function AccountDetailClient({ account, balance, items, accounts, categories, contacts, mainCurrency, mainCurrencyId }: AccountDetailClientProps) {
   const router = useRouter()
   const [, startRefreshTransition] = useTransition()
 
@@ -211,6 +212,7 @@ export function AccountDetailClient({ account, balance, items, accounts, categor
         loan={selectedLoan}
         defaultAccountId={account.id}
         accounts={accounts}
+        mainCurrencyId={mainCurrencyId}
         onSuccess={handleSuccess}
       />
     </div>

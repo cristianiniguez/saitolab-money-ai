@@ -16,6 +16,8 @@ interface LoansClientProps {
   loans: Loan[]
   accounts: Account[]
   contacts: Contact[]
+  currencySymbol: string
+  mainCurrencyId: string | null
 }
 
 function TableHead() {
@@ -53,7 +55,7 @@ function TableRowSkeleton() {
   )
 }
 
-export function LoansClient({ loans, accounts, contacts }: LoansClientProps) {
+export function LoansClient({ loans, accounts, contacts, currencySymbol, mainCurrencyId }: LoansClientProps) {
   const router = useRouter()
   const [isRefreshing, startRefreshTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
@@ -134,6 +136,7 @@ export function LoansClient({ loans, accounts, contacts }: LoansClientProps) {
                       <LoanRow
                         key={loan.id}
                         loan={loan}
+                        currencySymbol={currencySymbol}
                         onEdit={() => openEdit(loan)}
                         onSuccess={handleSuccess}
                       />
@@ -149,6 +152,7 @@ export function LoansClient({ loans, accounts, contacts }: LoansClientProps) {
         loan={selectedLoan}
         contacts={contacts}
         accounts={accounts}
+        mainCurrencyId={mainCurrencyId}
         onSuccess={handleSuccess}
       />
       <ImportCsvModal

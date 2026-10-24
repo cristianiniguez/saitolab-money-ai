@@ -5,6 +5,7 @@ import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Loan } from '@/lib/schemas/loans'
 import { toast } from 'sonner'
 import { deleteLoan } from '@/app/dashboard/loans/actions'
+import { formatMoney } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,16 +16,14 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
-
 interface LoanRowProps {
   loan: Loan
+  currencySymbol: string
   onEdit: () => void
   onSuccess: () => void
 }
 
-export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
+export function LoanRow({ loan, currencySymbol, onEdit, onSuccess }: LoanRowProps) {
   const [isPending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -55,7 +54,7 @@ export function LoanRow({ loan, onEdit, onSuccess }: LoanRowProps) {
           </span>
         </td>
         <td className={`px-4 py-3 text-right font-semibold tabular-nums ${loan.direction === 'lent' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-          {loan.direction === 'lent' ? '+' : '-'}{fmt(loan.amount)}
+          {loan.direction === 'lent' ? '+' : '-'}{formatMoney(loan.amount, currencySymbol)}
         </td>
         <td className="px-4 py-3">
           <div className="flex justify-end gap-1.5">

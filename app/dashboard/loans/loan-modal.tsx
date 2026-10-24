@@ -50,13 +50,21 @@ interface LoanModalProps {
   loan?: Loan | null
   defaultAccountId?: string
   accounts: Account[]
+  // Loans are recorded in the user's main currency; only accounts in that currency can be linked.
+  mainCurrencyId: string | null
   onSuccess: () => void
 }
 
-export function LoanModal({ open, onOpenChange, contactId, contacts, loan, defaultAccountId, accounts, onSuccess }: LoanModalProps) {
+export function LoanModal({ open, onOpenChange, contactId, contacts, loan, defaultAccountId: requestedAccountId, accounts, mainCurrencyId, onSuccess }: LoanModalProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
   const showContactSelect = contactId === undefined
+
+  const isEligible = (account: Account) => mainCurrencyId !== null && account.currency_id === mainCurrencyId
+  const eligibleAccounts = accounts.filter(isEligible)
+  // A loan saved before this rule may point at an ineligible account; keep it visible (disabled) so the value still renders.
+  const currentIneligible = loan?.account_id ? accounts.find(a => a.id === loan.account_id && !isEligible(a)) : undefined
+  const defaultAccountId = eligibleAccounts.some(a => a.id === requestedAccountId) ? requestedAccountId : undefined
 
   const form = useForm<LoanValues>({
     defaultValues: { account_id: defaultAccountId ?? null, contact_id: contactId ?? '', date: '', direction: 'lent', amount: 0, description: '' },
@@ -223,13 +231,19 @@ export function LoanModal({ open, onOpenChange, contactId, contacts, loan, defau
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={NO_ACCOUNT}>No account</SelectItem>
-                    {accounts.map(account => (
+                    {eligibleAccounts.map(account => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.name}
                       </SelectItem>
                     ))}
+                    {currentIneligible && (
+                      <SelectItem value={currentIneligible.id} disabled>
+                        {currentIneligible.name} (different currency)
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">Only accounts in your main currency can be linked.</p>
                 <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
               </Field>
             )}

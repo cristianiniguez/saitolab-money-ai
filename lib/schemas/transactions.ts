@@ -28,6 +28,6 @@ export interface Transaction {
   category_id?: string | null
   // InsForge join results use the source table name as the key.
   // Each is a single object (one account, zero or one category).
-  accounts?: { name: string }
+  accounts?: { name: string, currencies?: { symbol: string } | null }
   categories?: { name: string } | null
 }

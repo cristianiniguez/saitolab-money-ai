@@ -71,13 +71,15 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
       .eq('user_id', user.id),
     insforge.database
       .from('user_settings')
-      .select('currencies(symbol, slug, rate_usd)')
+      .select('main_currency_id, currencies(symbol, slug, rate_usd)')
       .eq('user_id', user.id)
       .limit(1)
   ])
 
-  type MainCurrencyRow = { currencies: { symbol: string; slug: string; rate_usd: number } | null }
-  const mainCurrency = (userSettings as MainCurrencyRow[] | null)?.[0]?.currencies ?? null
+  type MainCurrencyRow = { main_currency_id: string | null, currencies: { symbol: string, slug: string, rate_usd: number } | null }
+  const settingsRow = (userSettings as MainCurrencyRow[] | null)?.[0]
+  const mainCurrency = settingsRow?.currencies ?? null
+  const mainCurrencyId = settingsRow?.main_currency_id ?? null
 
   const accountList = (accounts as Account[]) ?? []
   const accountNames = new Map(accountList.map(a => [a.id, a.name]))
@@ -104,6 +106,7 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
           categories={(categories as Category[]) ?? []}
           contacts={(contacts as Contact[]) ?? []}
           mainCurrency={mainCurrency}
+          mainCurrencyId={mainCurrencyId}
         />
       </main>
     </div>

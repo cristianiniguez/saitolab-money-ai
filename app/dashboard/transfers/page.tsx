@@ -20,7 +20,7 @@ export default async function TransfersPage() {
       .limit(10),
     insforge.database
       .from('accounts')
-      .select('*')
+      .select('*, currencies(id, name, symbol, rate_usd)')
       .eq('user_id', user.id)
   ])
 

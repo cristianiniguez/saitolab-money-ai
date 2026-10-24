@@ -27,7 +27,7 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
 
   if (!contact) notFound()
 
-  const [{ data: loans }, { data: accounts }] = await Promise.all([
+  const [{ data: loans }, { data: accounts }, { data: userSettings }] = await Promise.all([
     insforge.database
       .from('loans')
       .select('*, contacts(name), accounts(name)')
@@ -37,8 +37,18 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
     insforge.database
       .from('accounts')
       .select('*')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('user_settings')
+      .select('main_currency_id, currencies(symbol)')
       .eq('user_id', user.id)
+      .limit(1)
   ])
+
+  // Loans are recorded in the user's main currency.
+  const settingsRow = (userSettings as { main_currency_id: string | null, currencies: { symbol: string } | null }[] | null)?.[0]
+  const currencySymbol = settingsRow?.currencies?.symbol ?? 'USD'
+  const mainCurrencyId = settingsRow?.main_currency_id ?? null
 
   const loanList = (loans as Loan[]) ?? []
   const balance = loanList.reduce((sum, loan) => {
@@ -53,6 +63,8 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
           balance={balance}
           loans={loanList}
           accounts={(accounts as Account[]) ?? []}
+          currencySymbol={currencySymbol}
+          mainCurrencyId={mainCurrencyId}
         />
       </main>
     </div>

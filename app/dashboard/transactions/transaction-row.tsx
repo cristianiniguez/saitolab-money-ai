@@ -5,6 +5,7 @@ import { PencilIcon, Trash2Icon } from 'lucide-react'
 import { type Transaction } from '@/lib/schemas/transactions'
 import { toast } from 'sonner'
 import { deleteTransaction } from './actions'
+import { formatMoney } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -37,10 +38,7 @@ export function TransactionRow({ transaction, onEdit, onSuccess }: TransactionRo
     year: 'numeric'
   })
 
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    currency: 'USD',
-    style: 'currency'
-  }).format(transaction.amount)
+  const formattedAmount = formatMoney(transaction.amount, transaction.accounts?.currencies?.symbol)
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false)

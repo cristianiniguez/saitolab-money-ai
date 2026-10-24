@@ -7,6 +7,42 @@ import { loanSchema, type LoanValues } from '@/lib/schemas/loans'
 type ActionResult = { success: boolean, error?: string }
 type ImportRowError = { row: number, message: string }
 type ImportResult = { success: boolean, imported: number, errors: ImportRowError[], error?: string }
+type InsForgeServerClient = ReturnType<typeof createInsForgeServerClient>
+
+const CURRENCY_MISMATCH = 'Loans can only be linked to accounts in your main currency'
+
+async function getMainCurrencyId(insforge: InsForgeServerClient, userId: string): Promise<string | null> {
+  const { data } = await insforge.database
+    .from('user_settings')
+    .select('main_currency_id')
+    .eq('user_id', userId)
+    .limit(1)
+  return (data as { main_currency_id: string | null }[] | null)?.[0]?.main_currency_id ?? null
+}
+
+// Loan amounts are recorded in the user's main currency, so a linked account must use it too.
+async function validateLoanAccount(
+  insforge: InsForgeServerClient,
+  userId: string,
+  accountId: string | null | undefined
+): Promise<string | null> {
+  if (!accountId) return null
+
+  const [mainCurrencyId, { data: account }] = await Promise.all([
+    getMainCurrencyId(insforge, userId),
+    insforge.database
+      .from('accounts')
+      .select('currency_id')
+      .eq('id', accountId)
+      .eq('user_id', userId)
+      .maybeSingle()
+  ])
+
+  if (!account) return 'Account not found'
+  if (!mainCurrencyId) return 'Set a main currency in Settings before linking loans to accounts'
+  if ((account as { currency_id: string }).currency_id !== mainCurrencyId) return CURRENCY_MISMATCH
+  return null
+}
 
 export async function importLoans(
   rows: Array<Record<string, string>>
@@ -18,16 +54,17 @@ export async function importLoans(
   const insforge = createInsForgeServerClient(token!)
 
   // Fetch slug → id maps for contacts and accounts
-  const [{ data: contacts }, { data: accounts }] = await Promise.all([
+  const [{ data: contacts }, { data: accounts }, mainCurrencyId] = await Promise.all([
     insforge.database.from('contacts').select('id, slug').eq('user_id', user.id),
-    insforge.database.from('accounts').select('id, slug').eq('user_id', user.id)
+    insforge.database.from('accounts').select('id, slug, currency_id').eq('user_id', user.id),
+    getMainCurrencyId(insforge, user.id)
   ])
 
   const contactMap = new Map<string, string>(
     (contacts ?? []).map((c: { id: string, slug: string }) => [c.slug, c.id])
   )
-  const accountMap = new Map<string, string>(
-    (accounts ?? []).map((a: { id: string, slug: string }) => [a.slug, a.id])
+  const accountMap = new Map<string, { id: string, currency_id: string }>(
+    (accounts ?? []).map((a: { id: string, slug: string, currency_id: string }) => [a.slug, a])
   )
 
   const toInsert: LoanValues[] = []
@@ -44,11 +81,16 @@ export async function importLoans(
       continue
     }
 
-    const account_id = accountSlug ? accountMap.get(accountSlug) : undefined
-    if (accountSlug && !account_id) {
+    const account = accountSlug ? accountMap.get(accountSlug) : undefined
+    if (accountSlug && !account) {
       errors.push({ row: i + 2, message: `Account slug "${accountSlug}" not found` })
       continue
     }
+    if (account && account.currency_id !== mainCurrencyId) {
+      errors.push({ row: i + 2, message: `Account "${accountSlug}": ${CURRENCY_MISMATCH.toLowerCase()}` })
+      continue
+    }
+    const account_id = account?.id
 
     const parsed = loanSchema.safeParse({
       account_id: account_id ?? null,
@@ -100,6 +142,10 @@ export async function createLoan(values: LoanValues): Promise<ActionResult> {
 
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
+
+  const accountError = await validateLoanAccount(insforge, user.id, parsed.data.account_id)
+  if (accountError) return { success: false, error: accountError }
+
   const { error } = await insforge.database.from('loans').insert({
     account_id: parsed.data.account_id,
     contact_id: parsed.data.contact_id,
@@ -126,6 +172,10 @@ export async function updateLoan(id: string, values: LoanValues): Promise<Action
 
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
+
+  const accountError = await validateLoanAccount(insforge, user.id, parsed.data.account_id)
+  if (accountError) return { success: false, error: accountError }
+
   const { error } = await insforge.database
     .from('loans')
     .update({

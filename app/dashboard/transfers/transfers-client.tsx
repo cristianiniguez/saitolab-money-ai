@@ -57,6 +57,7 @@ export function TransfersClient({ transfers, accounts }: TransfersClientProps) {
   const [importModalOpen, setImportModalOpen] = useState(false)
 
   const accountNames = new Map(accounts.map(a => [a.id, a.name]))
+  const accountCurrencies = new Map(accounts.map(a => [a.id, a.currencies?.symbol]))
 
   const handleSuccess = () => {
     startRefreshTransition(() => {
@@ -134,6 +135,8 @@ export function TransfersClient({ transfers, accounts }: TransfersClientProps) {
                         transfer={transfer}
                         fromAccountName={accountNames.get(transfer.from_account_id)}
                         toAccountName={accountNames.get(transfer.to_account_id)}
+                        fromCurrency={accountCurrencies.get(transfer.from_account_id)}
+                        toCurrency={accountCurrencies.get(transfer.to_account_id)}
                         onEdit={() => openEdit(transfer)}
                         onSuccess={handleSuccess}
                       />

@@ -35,7 +35,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
       .eq('user_id', user.id),
     insforge.database
       .from('transactions')
-      .select('*, accounts(name), categories(name)')
+      .select('*, accounts(name, currencies(symbol)), categories(name)')
       .eq('category_id', (category as Category).id)
       .eq('user_id', user.id)
       .order('date', { ascending: false })

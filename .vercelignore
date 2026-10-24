@@ -1,0 +1,5 @@
+data
+mocks
+.env*
+migrations
+tsconfig.tsbuildinfo

@@ -90,7 +90,7 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
     accountNames
   )
 
-  const balance = sumActivity(feedItems)
+  const balance = Number((account as Account).initial_amount ?? 0) + sumActivity(feedItems)
   const recentItems = feedItems.slice(0, 10)
 
   return (

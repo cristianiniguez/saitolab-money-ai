@@ -48,7 +48,7 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<AccountValues>({
-    defaultValues: { currency_id: defaultCurrencyId, name: '', slug: '', type: 'bank' },
+    defaultValues: { currency_id: defaultCurrencyId, initial_amount: 0, name: '', slug: '', type: 'bank' },
     resolver: zodResolver(accountSchema)
   })
 
@@ -77,8 +77,8 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
   useEffect(() => {
     if (open) {
       form.reset(account
-        ? { currency_id: account.currency_id ?? defaultCurrencyId, name: account.name, slug: account.slug, type: account.type }
-        : { currency_id: defaultCurrencyId, name: '', slug: '', type: 'bank' }
+        ? { currency_id: account.currency_id ?? defaultCurrencyId, initial_amount: account.initial_amount ?? 0, name: account.name, slug: account.slug, type: account.type }
+        : { currency_id: defaultCurrencyId, initial_amount: 0, name: '', slug: '', type: 'bank' }
       )
       setServerError(null)
     }
@@ -200,6 +200,25 @@ export function AccountModal({ open, onOpenChange, account, onSuccess, currencie
                     ))}
                   </SelectContent>
                 </Select>
+                <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="initial_amount"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid || undefined} className="space-y-2">
+                <FieldLabel>Initial Amount</FieldLabel>
+                <Input
+                  {...field}
+                  id="initial_amount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  aria-invalid={fieldState.invalid}
+                />
                 <FieldError className="text-xs">{fieldState.error?.message}</FieldError>
               </Field>
             )}

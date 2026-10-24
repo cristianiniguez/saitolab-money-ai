@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser, getAccessToken, createInsForgeServerClient } from '@/lib/insforge/server'
 import { type Account } from '@/lib/schemas/accounts'
 import { type Currency } from '@/lib/schemas/currencies'
+import { computeAccountBalances } from '@/lib/balances'
 import { AccountsClient } from './accounts-client'
 
 export default async function AccountsPage() {
@@ -11,7 +12,14 @@ export default async function AccountsPage() {
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  const [{ data: accounts }, { data: transactions }, { data: currencies }, { data: userSettings }] = await Promise.all([
+  const [
+    { data: accounts },
+    { data: transactions },
+    { data: transfers },
+    { data: loans },
+    { data: currencies },
+    { data: userSettings }
+  ] = await Promise.all([
     insforge.database
       .from('accounts')
       .select('*, currencies(id, name, symbol, rate_usd)')
@@ -19,6 +27,14 @@ export default async function AccountsPage() {
     insforge.database
       .from('transactions')
       .select('amount, type, account_id')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('transfers')
+      .select('amount, to_amount, from_account_id, to_account_id')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('loans')
+      .select('amount, direction, account_id')
       .eq('user_id', user.id),
     insforge.database
       .from('currencies')
@@ -36,11 +52,12 @@ export default async function AccountsPage() {
   const mainCurrencyId = settingsRow?.main_currency_id ?? null
   const mainCurrency = settingsRow?.currencies ?? null
 
-  const txList = (transactions ?? []) as { amount: number, type: string, account_id: string }[]
-  const balances: Record<string, number> = {}
-  for (const tx of txList) {
-    balances[tx.account_id] = (balances[tx.account_id] ?? 0) + (tx.type === 'income' ? tx.amount : -tx.amount)
-  }
+  const balances = computeAccountBalances(
+    (accounts as Account[]) ?? [],
+    transactions ?? [],
+    transfers ?? [],
+    loans ?? []
+  )
 
   return (
     <div className="flex flex-col flex-1 bg-muted/20 font-sans p-8">

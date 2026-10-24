@@ -5,6 +5,7 @@ export type AccountType = typeof ACCOUNT_TYPES[number]
 
 export const accountSchema = z.object({
   currency_id: z.string().min(1, 'Currency is required'),
+  initial_amount: z.coerce.number({ invalid_type_error: 'Initial amount must be a number' }),
   name: z.string().min(1, 'Name is required'),
   slug: z.string().regex(/^[a-z0-9-]*$/, 'Invalid slug').min(1, 'Slug is required'),
   type: z.enum(ACCOUNT_TYPES, { message: 'Select a valid type' })

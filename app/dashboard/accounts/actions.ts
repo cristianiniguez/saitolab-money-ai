@@ -37,6 +37,7 @@ export async function createAccount(values: AccountValues): Promise<ActionResult
 
   const { error } = await insforge.database.from('accounts').insert({
     currency_id: parsed.data.currency_id,
+    initial_amount: parsed.data.initial_amount,
     name: parsed.data.name,
     slug: parsed.data.slug,
     type: parsed.data.type,
@@ -69,7 +70,7 @@ export async function updateAccount(id: string, values: AccountValues): Promise<
 
   const { error } = await insforge.database
     .from('accounts')
-    .update({ currency_id: parsed.data.currency_id, name: parsed.data.name, slug: parsed.data.slug, type: parsed.data.type })
+    .update({ currency_id: parsed.data.currency_id, initial_amount: parsed.data.initial_amount, name: parsed.data.name, slug: parsed.data.slug, type: parsed.data.type })
     .eq('id', id)
     .eq('user_id', user.id)
 
@@ -119,7 +120,8 @@ export async function importAccounts(
     const typeDefault = accountType === 'crypto' ? cryptoDefault : fiatDefault
     const currencyEntry = (currencySlug ? currencyBySlug[currencySlug] : typeDefault) ?? typeDefault
     const currency_id = currencyEntry?.id ?? ''
-    const parsed = accountSchema.safeParse({ currency_id, name: raw.name?.trim(), slug, type: raw.type?.trim() })
+    const initial_amount = raw.initial_amount?.trim() || '0'
+    const parsed = accountSchema.safeParse({ currency_id, initial_amount, name: raw.name?.trim(), slug, type: raw.type?.trim() })
     if (!parsed.success) {
       errors.push({ message: parsed.error.errors[0]?.message ?? 'Invalid row', row: i + 2 })
       continue

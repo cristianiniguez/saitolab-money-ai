@@ -1,6 +1,7 @@
 import { getAccessToken, createInsForgeServerClient, getCurrentUser } from '@/lib/insforge/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { computeAccountBalances } from '@/lib/balances'
 import { BalanceChart, type AccountChartSlice } from './components/balance-chart'
 
 const CHART_COLORS = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'] as const
@@ -12,14 +13,22 @@ export default async function DashboardPage() {
   const token = await getAccessToken()
   const insforge = createInsForgeServerClient(token!)
 
-  const [{ data: transactions }, { data: accounts }, { data: userSettings }] = await Promise.all([
+  const [{ data: transactions }, { data: transfers }, { data: loans }, { data: accounts }, { data: userSettings }] = await Promise.all([
     insforge.database
       .from('transactions')
       .select('amount, type, account_id')
       .eq('user_id', user.id),
     insforge.database
+      .from('transfers')
+      .select('amount, to_amount, from_account_id, to_account_id')
+      .eq('user_id', user.id),
+    insforge.database
+      .from('loans')
+      .select('amount, direction, account_id')
+      .eq('user_id', user.id),
+    insforge.database
       .from('accounts')
-      .select('id, name')
+      .select('id, name, initial_amount')
       .eq('user_id', user.id),
     insforge.database
       .from('user_settings')
@@ -35,7 +44,8 @@ export default async function DashboardPage() {
     new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(n)
 
   const txList = (transactions ?? []) as { amount: number, type: string, account_id: string }[]
-  const acctList = (accounts ?? []) as { id: string, name: string }[]
+  const acctList = (accounts ?? []) as { id: string, name: string, initial_amount: number }[]
+  const balances = computeAccountBalances(acctList, txList, transfers ?? [], loans ?? [])
 
   let totalIncome = 0
   let totalExpenses = 0
@@ -52,7 +62,7 @@ export default async function DashboardPage() {
     }
   }
 
-  const totalBalance = totalIncome - totalExpenses
+  const totalBalance = acctList.reduce((sum, acct) => sum + (balances[acct.id] ?? 0), 0)
 
   const chartSlices: AccountChartSlice[] = acctList.map((acct, i) => {
     const { income = 0, expenses = 0 } = perAccount[acct.id] ?? {}
@@ -61,7 +71,7 @@ export default async function DashboardPage() {
       name: acct.name,
       income,
       expenses,
-      netBalance: income - expenses,
+      netBalance: balances[acct.id] ?? 0,
       fill: `var(${CHART_COLORS[i % 5]})`
     }
   })
